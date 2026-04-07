@@ -36,15 +36,15 @@ const ConfirmDeleteModal = ({ isOpen, onClose, onConfirm, title, message, isLoad
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="absolute inset-0 bg-secondary/60 backdrop-blur-sm"
                     />
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="bg-white rounded-[2rem] w-full max-w-md relative z-10 overflow-hidden shadow-2xl p-8 text-center"
+                        className="bg-white rounded-2xl w-full max-w-md relative z-10 overflow-hidden shadow-2xl p-8 text-center"
                     >
-                        <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+                        <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner">
                             <Trash2 size={32} />
                         </div>
                         
@@ -127,7 +127,7 @@ const PostCard = ({ post, currentUser, onLike, onDeletePost, onReply, onDeleteRe
 
     return (
         <div
-            className={`bg-white rounded-3xl border transition-all ${
+            className={`bg-white rounded-2xl border transition-all ${
                 expanded
                     ? 'border-primary ring-4 ring-primary/5 shadow-lg'
                     : 'border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200'
@@ -154,22 +154,22 @@ const PostCard = ({ post, currentUser, onLike, onDeletePost, onReply, onDeleteRe
                                     {post.author.firstName} {post.author.lastName}
                                 </span>
                                 {post.author.role === 'mentor' && (
-                                    <span className="text-[9px] font-black uppercase tracking-tighter bg-indigo-50 text-indigo-500 px-1.5 py-0.5 rounded-md border border-indigo-100">
+                                    <span className="text-[9px] font-black uppercase tracking-tighter bg-primary/5 text-primary px-1.5 py-0.5 rounded-md border border-primary/10">
                                         Mentor
                                     </span>
                                 )}
                                 {post.author.role === 'admin' && (
-                                    <span className="text-[9px] font-black uppercase tracking-tighter bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-md border border-emerald-100">
+                                    <span className="text-[9px] font-black uppercase tracking-tighter bg-accent/5 text-accent px-1.5 py-0.5 rounded-md border border-accent/10">
                                         Admin
                                     </span>
                                 )}
                                 {post.author.role === 'superuser' && (
-                                    <span className="text-[9px] font-black uppercase tracking-tighter bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded-md border border-rose-100">
+                                    <span className="text-[9px] font-black uppercase tracking-tighter bg-secondary/5 text-secondary px-1.5 py-0.5 rounded-md border border-secondary/10">
                                         Superuser
                                     </span>
                                 )}
                                 {post.isPinned && <Pin size={10} className="text-amber-500 fill-amber-500" />}
-                                {post.isResolved && <CheckCircle2 size={12} className="text-emerald-500" />}
+                                {post.isResolved && <CheckCircle2 size={12} className="text-accent" />}
                             </div>
                             <span className="text-xs text-slate-400 font-medium flex items-center gap-1">
                                 <Clock size={10} />
@@ -280,17 +280,17 @@ const PostCard = ({ post, currentUser, onLike, onDeletePost, onReply, onDeleteRe
                                                             <span className="text-sm font-black text-secondary flex items-center gap-2">
                                                                 {reply.author?.firstName} {reply.author?.lastName}
                                                                 {reply.author?.role === 'mentor' && (
-                                                                    <span className="text-[8px] font-black uppercase tracking-tighter bg-indigo-50 text-indigo-500 px-1 py-0.5 rounded-md border border-indigo-100">
+                                                                    <span className="text-[8px] font-black uppercase tracking-tighter bg-primary/5 text-primary px-1 py-0.5 rounded-md border border-primary/10">
                                                                         Mentor
                                                                     </span>
                                                                 )}
                                                                 {reply.author?.role === 'admin' && (
-                                                                    <span className="text-[8px] font-black uppercase tracking-tighter bg-emerald-50 text-emerald-600 px-1 py-0.5 rounded-md border border-emerald-100">
+                                                                    <span className="text-[8px] font-black uppercase tracking-tighter bg-accent/5 text-accent px-1 py-0.5 rounded-md border border-accent/10">
                                                                         Admin
                                                                     </span>
                                                                 )}
                                                                 {reply.author?.role === 'superuser' && (
-                                                                    <span className="text-[8px] font-black uppercase tracking-tighter bg-rose-50 text-rose-600 px-1 py-0.5 rounded-md border border-rose-100">
+                                                                    <span className="text-[8px] font-black uppercase tracking-tighter bg-secondary/5 text-secondary px-1 py-0.5 rounded-md border border-secondary/10">
                                                                         Superuser
                                                                     </span>
                                                                 )}
@@ -568,9 +568,9 @@ const CourseForum = () => {
                                 : "Be the first one to start a conversation in this course!"}
                         </p>
                         {!searchQuery && (
-                            <button
+                                <button
                                 onClick={() => setIsNewPostModalOpen(true)}
-                                className="mt-8 px-8 py-3 bg-primary text-white rounded-xl font-bold hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-95"
+                                className="mt-8 px-8 py-3 bg-primary text-white rounded-2xl font-bold hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-95"
                             >
                                 Post a Question
                             </button>
@@ -624,13 +624,13 @@ const CourseForum = () => {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => !submitting && setIsNewPostModalOpen(false)}
-                            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+                            className="absolute inset-0 bg-secondary/40 backdrop-blur-sm"
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="bg-white rounded-[2.5rem] w-full max-w-2xl relative z-10 overflow-hidden shadow-2xl"
+                            className="bg-white rounded-2xl w-full max-w-2xl relative z-10 overflow-hidden shadow-2xl"
                         >
                             <form onSubmit={handleCreatePost} className="p-8 md:p-10 space-y-8">
                                 <div className="flex justify-between items-start">
@@ -648,7 +648,7 @@ const CourseForum = () => {
                                     <button
                                         type="button"
                                         onClick={() => setIsNewPostModalOpen(false)}
-                                        className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-400"
+                                        className="p-2 hover:bg-slate-100 rounded-2xl transition-colors text-slate-400"
                                     >
                                         <X size={24} />
                                     </button>
@@ -700,7 +700,7 @@ const CourseForum = () => {
                                                     }
                                                 }
                                             }}
-                                            className="w-full px-6 py-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-slate-600 outline-none focus:ring-2 focus:ring-primary/10 transition-all text-xs"
+                                            className="w-full px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-600 outline-none focus:ring-2 focus:ring-primary/10 transition-all text-xs"
                                         />
                                         {newPost.tags.length > 0 && (
                                             <div className="flex flex-wrap gap-2">

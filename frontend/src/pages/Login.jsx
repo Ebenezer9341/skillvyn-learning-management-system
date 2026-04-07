@@ -13,17 +13,40 @@ export default function Login() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [isReturningUser, setIsReturningUser] = useState(false);
+    const [emailNotVerified, setEmailNotVerified] = useState(false);
+    const [resendStatus, setResendStatus] = useState('idle'); // idle | sending | sent
 
-    const { login } = useAuth();
+    const { login, user, loading: authLoading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [successMessage, setSuccessMessage] = useState(location.state?.message || '');
+
+    // Redirect if already logged in
+    useEffect(() => {
+        if (user && !authLoading) {
+            const role = user.role?.toLowerCase();
+            const from = location.state?.from?.pathname;
+
+            // If they are a normal candidate, return them to whatever course/page they left off from
+            if (from && role === 'candidate') {
+                navigate(from, { replace: true });
+                return;
+            }
+
+            // Otherwise, rigidly route staff members to their dedicated dashboards
+            if (role === 'superuser') navigate('/superuser', { replace: true });
+            else if (role === 'admin') navigate('/admin', { replace: true });
+            else if (role === 'mentor') navigate('/mentor', { replace: true });
+            else if (role === 'candidate') navigate('/candidate', { replace: true });
+            else navigate('/', { replace: true });
+        }
+    }, [user, authLoading, navigate, location]);
 
     // Set page title and check returning user
     useEffect(() => {
         document.title = 'Login - Skillvyn';
         const hasVisitedBefore = localStorage.getItem('hasVisitedLoginBefore');
-        setIsReturningUser(!!hasVisitedBefore); // Simplified: true if key exists, false otherwise
+        setIsReturningUser(!!hasVisitedBefore);
     }, []);
 
     const validateForm = () => {
@@ -40,18 +63,20 @@ export default function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (!validateForm()) return;
 
         setIsLoading(true);
         setError('');
         setSuccessMessage('');
+        setEmailNotVerified(false);
+        setResendStatus('idle');
 
         try {
             const response = await api.post('api/auth/login', { email, password });
             const data = response.data;
 
-            if (data.status !== "success") {
+            if (data.status !== 'success') {
                 throw new Error(data.message || 'Invalid email or password');
             }
 
@@ -61,24 +86,29 @@ export default function Login() {
             // Mark user as "Returning" only after successful login
             localStorage.setItem('hasVisitedLoginBefore', 'true');
 
-            // Redirect to specifically requested page or role-based dashboard
-            const from = location.state?.from?.pathname;
-            if (from) {
-                navigate(from, { replace: true });
-                return;
-            }
-
-            const role = data.data.user.role?.toLowerCase();
-            if (role === 'superuser') navigate('/superuser');
-            else if (role === 'admin') navigate('/admin');
-            else if (role === 'mentor') navigate('/mentor');
-            else if (role === 'candidate') navigate('/candidate');
-            else navigate('/');
-
+            // Note: We intentionally DO NOT call navigate() here.
+            // The useEffect hook listening to `user` handles the redirect
+            // once AuthContext state has safely propagated.
         } catch (err) {
-            setError(err.response?.data?.message || err.message || 'Something went wrong');
+            // Detect the specific 403 "email not verified" case
+            if (err.response?.status === 403) {
+                setEmailNotVerified(true);
+            } else {
+                setError(err.response?.data?.message || err.message || 'Something went wrong');
+            }
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleResendVerification = async () => {
+        if (resendStatus !== 'idle') return;
+        setResendStatus('sending');
+        try {
+            await api.post('api/auth/resend-verification', { email });
+            setResendStatus('sent');
+        } catch {
+            setResendStatus('idle'); // allow retry on failure
         }
     };
 
@@ -88,9 +118,9 @@ export default function Login() {
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-[120px] pointer-events-none" />
 
-            <Link to="/" className="fixed top-8 left-8 flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors group">
-                <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
-                    <ChevronLeft size={16} />
+            <Link to="/" className="fixed top-8 left-8 flex items-center gap-2 text-slate-500 hover:text-accent transition-colors group">
+                <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm group-hover:border-accent group-hover:bg-accent/5 group-hover:scale-110 transition-all duration-300">
+                    <ChevronLeft size={16} className="group-hover:text-accent transition-colors" />
                 </div>
                 <span className="text-sm font-semibold">Back to Home</span>
             </Link>
@@ -98,7 +128,7 @@ export default function Login() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
                 className="w-full max-w-[460px] relative z-10"
             >
                 <div className="text-center mb-10 flex flex-col items-center gap-4">
@@ -113,10 +143,46 @@ export default function Login() {
                     </p>
                 </div>
 
-                <div className="bg-white/70 p-10 rounded-[2.5rem] border border-white backdrop-blur-3xl shadow-[0_32px_80px_-16px_rgba(31,41,55,0.15)] ring-1 ring-slate-100">
+                <div className="bg-white/70 p-10 rounded-2xl border border-white backdrop-blur-3xl shadow-[0_32px_80px_-16px_rgba(31,41,55,0.15)] ring-1 ring-slate-100">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <AnimatePresence mode="wait">
-                            {(error || successMessage) && (
+                            {emailNotVerified ? (
+                                <motion.div
+                                    key="unverified"
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3"
+                                >
+                                    <div className="flex items-start gap-3">
+                                        <Mail size={18} className="text-amber-600 shrink-0 mt-0.5" />
+                                        <div>
+                                            <p className="text-sm font-bold text-amber-800">Email not verified</p>
+                                            <p className="text-xs text-amber-700 font-medium mt-0.5">
+                                                Check your inbox for a verification link, or request a new one below.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {resendStatus === 'sent' ? (
+                                        <p className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+                                            ✓ A new verification link has been sent to {email}
+                                        </p>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            id="resend-verification-btn"
+                                            onClick={handleResendVerification}
+                                            disabled={resendStatus === 'sending'}
+                                            className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 disabled:opacity-60 text-white text-xs font-black uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-95"
+                                        >
+                                            {resendStatus === 'sending'
+                                                ? <><Loader2 size={14} className="animate-spin" /> Sending...</>
+                                                : <><Mail size={14} /> Resend Verification Email</>
+                                            }
+                                        </button>
+                                    )}
+                                </motion.div>
+                            ) : (error || successMessage) ? (
                                 <motion.div
                                     key={error ? 'error' : 'success'}
                                     initial={{ opacity: 0, y: -10 }}
@@ -127,7 +193,7 @@ export default function Login() {
                                     <AlertCircle size={18} className="shrink-0" />
                                     <p>{error || successMessage}</p>
                                 </motion.div>
-                            )}
+                            ) : null}
                         </AnimatePresence>
 
                         <div className="space-y-2">
@@ -139,29 +205,29 @@ export default function Login() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="name@example.com"
-                                    className="w-full bg-slate-50 border border-slate-200 py-4 pl-12 pr-4 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all group-hover:bg-slate-50/50 duration-300 font-medium disabled:opacity-50 shadow-sm"
+                                    className="w-full bg-slate-50 border border-slate-200 py-4 pl-12 pr-4 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-accent focus:ring-4 focus:ring-accent/10 transition-all group-hover:bg-slate-50/50 duration-300 font-medium disabled:opacity-50 shadow-sm"
                                     disabled={isLoading}
                                 />
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={20} />
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-accent transition-colors" size={20} />
                             </div>
                         </div>
 
                         <div className="space-y-2">
                             <div className="flex items-center justify-between ml-1">
                                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Password</label>
-                                <Link to="/forgot-password" size="sm" className="text-[10px] font-black uppercase tracking-[0.1em] text-primary hover:text-primary focus:underline underline-offset-4">Forgot?</Link>
+                                <Link to="/forgot-password" className="text-[10px] font-black uppercase tracking-[0.1em] text-accent hover:underline underline-offset-4 decoration-accent/30 decoration-2">Forgot?</Link>
                             </div>
                             <div className="relative group">
                                 <input
-                                    type={showPassword ? "text" : "password"}
+                                    type={showPassword ? 'text' : 'password'}
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="••••••••"
-                                    className="w-full bg-slate-50 border border-slate-200 py-4 pl-12 pr-12 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all group-hover:bg-slate-50/50 duration-300 font-medium disabled:opacity-50 shadow-sm"
+                                    className="w-full bg-slate-50 border border-slate-200 py-4 pl-12 pr-12 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-accent focus:ring-4 focus:ring-accent/10 transition-all group-hover:bg-slate-50/50 duration-300 font-medium disabled:opacity-50 shadow-sm"
                                     disabled={isLoading}
                                 />
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={20} />
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-accent transition-colors" size={20} />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
@@ -175,7 +241,7 @@ export default function Login() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full py-4.5 bg-primary hover:bg-primary/90 text-white font-bold rounded-2xl shadow-xl shadow-primary/30 space-x-2 flex items-center justify-center transition-all hover:scale-[1.02] active:scale-95 duration-300 group disabled:opacity-70 disabled:hover:scale-100"
+                            className="w-full py-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-2xl shadow-xl shadow-primary/30 space-x-2 flex items-center justify-center transition-all hover:scale-[1.02] active:scale-95 duration-300 group disabled:opacity-70 disabled:hover:scale-100"
                         >
                             {isLoading ? <Loader2 size={20} className="animate-spin" /> : <>
                                 <LogIn size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -185,20 +251,20 @@ export default function Login() {
                     </form>
 
                     <div className="mt-8 text-center border-t border-slate-100 pt-8">
-                        <p className="text-slate-500 font-semibold group">
+                        <p className="text-slate-500 font-semibold">
                             Don't have an account?{' '}
                             <Link to="/register" className="text-primary font-bold hover:underline underline-offset-4 decoration-primary/50 transition-all decoration-2">Sign up free</Link>
                         </p>
                     </div>
                 </div>
 
-                <div className="mt-8 flex items-center justify-center gap-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                {/* <div className="mt-8 flex items-center justify-center gap-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                     <Link to="/terms" className="hover:text-slate-900 transition-colors">Terms</Link>
                     <span className="w-1.5 h-1.5 bg-slate-200 rounded-full" />
                     <Link to="/privacy" className="hover:text-slate-900 transition-colors">Privacy</Link>
                     <span className="w-1.5 h-1.5 bg-slate-200 rounded-full" />
                     <Link to="/support" className="hover:text-slate-900 transition-colors">Support</Link>
-                </div>
+                </div> */}
             </motion.div>
         </div>
     );

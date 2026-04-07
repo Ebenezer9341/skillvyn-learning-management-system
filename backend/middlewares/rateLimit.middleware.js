@@ -30,3 +30,33 @@ export const apiRateLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
 });
+
+/**
+ * Verification Rate Limiter
+ * Used for email verification clicks. Slightly more relaxed than login.
+ */
+export const verificationRateLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 30, // Relaxed to allow for refreshes/browser double-fires
+    message: {
+        status: 'fail',
+        message: 'Too many verification attempts from this IP, please try again later'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+/**
+ * Email Spam Limiter
+ * Specifically for "Resend Verification" or "Forgot Password" to prevent email bombing.
+ */
+export const emailSpamLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 5, // Only 5 emails allowed per hour to prevent abuse
+    message: {
+        status: 'fail',
+        message: 'Too many email requests! Please check your inbox or try again in an hour'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});

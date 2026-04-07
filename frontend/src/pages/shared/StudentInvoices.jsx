@@ -110,7 +110,7 @@ const StudentInvoices = () => {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh]">
-                <Loader2 size={32} className="animate-spin text-indigo-600" />
+                <Loader2 size={32} className="animate-spin text-primary" />
                 <p className="text-slate-400 font-black mt-4 text-xs uppercase tracking-[0.2em]">Loading Invoices...</p>
             </div>
         );
@@ -131,19 +131,19 @@ const StudentInvoices = () => {
                     
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div className="flex items-center gap-5">
-                            <div className="w-16 h-16 rounded-3xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-inner-sm">
+                            <div className="w-16 h-16 rounded-2xl bg-secondary/5 text-secondary flex items-center justify-center shadow-inner-sm">
                                 <ReceiptText size={32} />
                             </div>
                             <div>
                                 <h1 className="text-2xl font-black text-slate-900 leading-tight">Billing & Invoices</h1>
                                 <p className="text-slate-400 font-bold mt-1 text-sm flex items-center gap-2">
-                                    <User size={14} className="text-indigo-400" />
+                                    <User size={14} className="text-primary" />
                                     Candidate: <span className="text-slate-900">{candidate?.firstName} {candidate?.lastName}</span>
                                 </p>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-3xl border border-slate-100">
+                        <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                              <div className="text-right">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Total Purchases</p>
                                 <p className="text-xl font-black text-slate-900">{transactions.length}</p>
@@ -151,7 +151,7 @@ const StudentInvoices = () => {
                              <div className="w-px h-8 bg-slate-200 mx-2" />
                              <div className="text-right">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Lifetime Value</p>
-                                <p className="text-xl font-black text-indigo-600 flex items-center gap-1">
+                                <p className="text-xl font-black text-primary flex items-center gap-1">
                                     <IndianRupee size={16} strokeWidth={3} />
                                     {transactions.reduce((acc, tx) => acc + (tx.amount || 0), 0).toLocaleString()}
                                 </p>
@@ -163,8 +163,8 @@ const StudentInvoices = () => {
 
             <div className="max-w-6xl mx-auto px-6 py-10">
                 {transactions.length === 0 ? (
-                    <div className="bg-white rounded-[3rem] border border-slate-100 p-24 text-center shadow-sm">
-                        <div className="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center mx-auto mb-6 text-slate-200 border border-slate-100">
+                    <div className="bg-white rounded-2xl border border-slate-100 p-24 text-center shadow-sm">
+                        <div className="w-24 h-24 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-slate-200 border border-slate-100">
                             <ShoppingBag size={40} strokeWidth={1.5} />
                         </div>
                         <h3 className="text-xl font-black text-slate-900 tracking-tight">No Transactions Found</h3>
@@ -181,7 +181,7 @@ const StudentInvoices = () => {
                                 initial={{ opacity: 0, y: 16 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.05 }}
-                                className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 flex flex-col md:flex-row items-center gap-6 group hover:shadow-xl hover:shadow-indigo-500/5 transition-all"
+                                className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col md:flex-row items-center gap-6 group hover:shadow-xl hover:shadow-primary/5 transition-all"
                             >
                                 <div className="w-20 h-20 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 flex-shrink-0 overflow-hidden border border-slate-100 shadow-inner-sm">
                                     {tx.course?.thumbnail ? (
@@ -192,7 +192,7 @@ const StudentInvoices = () => {
                                 </div>
 
                                 <div className="flex-1 min-w-0 text-center md:text-left">
-                                    <h3 className="font-black text-slate-900 text-lg leading-tight mb-2 tracking-tight group-hover:text-indigo-600 transition-colors">{tx.course?.title}</h3>
+                                    <h3 className="font-black text-slate-900 text-lg leading-tight mb-2 tracking-tight group-hover:text-primary transition-colors">{tx.course?.title}</h3>
                                     <div className="flex items-center justify-center md:justify-start flex-wrap gap-x-6 gap-y-2">
                                         <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                                             <Hash size={12} className="text-slate-300" /> {tx.invoiceNumber}
@@ -200,7 +200,7 @@ const StudentInvoices = () => {
                                         <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                                             <Calendar size={12} className="text-slate-300" /> {new Date(tx.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                                         </span>
-                                        <span className="flex items-center gap-1.5 text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                                        <span className="flex items-center gap-1.5 text-[10px] font-black text-accent uppercase tracking-widest bg-accent/5 px-2 py-0.5 rounded-md border border-accent/10">
                                             <CheckCircle2 size={12} /> Success
                                         </span>
                                     </div>
@@ -216,7 +216,7 @@ const StudentInvoices = () => {
 
                                 <button
                                     onClick={() => downloadInvoice(tx)}
-                                    className="w-full md:w-auto px-8 h-14 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 hover:bg-indigo-600 shadow-lg shadow-slate-200 active:scale-95"
+                                    className="w-full md:w-auto px-8 h-14 bg-secondary text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 hover:bg-primary shadow-lg shadow-secondary/10 active:scale-95"
                                 >
                                     <Download size={16} />
                                     Generate PDF
@@ -286,7 +286,7 @@ const StudentInvoices = () => {
                                         <span style={{ fontSize: '24px' }}>₹</span>{selectedTx.amount?.toLocaleString()}
                                     </div>
                                 </div>
-                                <div style={{ background: '#ecfdf5', color: '#059669', padding: '10px 20px', borderRadius: '100px', fontSize: '12px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '2px', border: '1px solid #d1fae5' }}>
+                                <div style={{ background: '#f0f9ff', color: '#006CFA', padding: '10px 20px', borderRadius: '100px', fontSize: '12px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '2px', border: '1px solid #e0f2fe' }}>
                                     ✓ Payment Successful
                                 </div>
                             </div>

@@ -7,12 +7,47 @@ export const AuthProvider = ({ children }) => {
     const [accessToken, setAccessToken] = useState(localStorage.getItem('access_token'));
     const [loading, setLoading] = useState(true);
 
+    const logout = () => {
+        setUser(null);
+        setAccessToken(null);
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user');
+    };
+
+    // ✅ AFTER
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser && accessToken) {
-            setUser(JSON.parse(storedUser));
-        }
-        setLoading(false);
+        const verifySession = async () => {
+            if (!accessToken) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/users/me', {
+                    headers: { Authorization: `Bearer ${accessToken}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const freshUser = data.data.user;
+                    setUser(freshUser);
+                    // Keep localStorage in sync with server truth
+                    localStorage.setItem('user', JSON.stringify(freshUser));
+                } else {
+                    // Token is invalid or expired — force logout
+                    logout();
+                }
+            } catch {
+                // Network error — fall back to localStorage so app works offline
+                const storedUser = localStorage.getItem('user');
+                if (storedUser) setUser(JSON.parse(storedUser));
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        verifySession();
     }, [accessToken]);
 
     const login = (userData, access, refresh) => {
@@ -23,13 +58,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('user', JSON.stringify(userData));
     };
 
-    const logout = () => {
-        setUser(null);
-        setAccessToken(null);
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user');
-    };
+
 
     const updateUser = (updatedUser) => {
         setUser(updatedUser);                                      // update React state

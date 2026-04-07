@@ -7,3 +7,9 @@
 .DS_Store
 /backend/uploads/*
 !/backend/uploads/.gitkeep
+
+# Debug / dev artifacts
+backend/verify-data.js
+backend/success_log.json
+backend/test_output.txt
+backend/test_output*.txt

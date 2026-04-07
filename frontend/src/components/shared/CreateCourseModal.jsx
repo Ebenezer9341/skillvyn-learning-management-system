@@ -14,8 +14,11 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
+import { useAuth } from '../../context/AuthContext';
 
 const CreateCourseModal = ({ isOpen, onClose, onSuccess }) => {
+    const { user } = useAuth();
+    const isAdmin = user?.role === 'admin' || user?.role === 'superuser';
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -84,17 +87,17 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess }) => {
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-white"
+                        className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-white"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header */}
-                        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-8 text-white relative">
+                        <div className="bg-gradient-to-r from-primary to-secondary p-8 text-white relative">
                             <div className="relative z-10">
                                 <h2 className="text-2xl font-bold flex items-center gap-2">
-                                    <Plus className="bg-white/20 p-1 rounded-lg" size={28} />
+                                    <Plus className="bg-white/20 p-1 rounded-2xl" size={28} />
                                     Launch New Course
                                 </h2>
-                                <p className="text-blue-100 text-sm mt-1">Fill in the core details to start building your educational path.</p>
+                                <p className="text-white/80 text-sm mt-1">Fill in the core details to start building your educational path.</p>
                             </div>
                             <button
                                 onClick={onClose}
@@ -104,7 +107,7 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess }) => {
                             </button>
                             {/* Decorative bubbles */}
                             <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
-                            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-blue-400/20 rounded-full blur-2xl pointer-events-none"></div>
+                            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/20 rounded-full blur-2xl pointer-events-none"></div>
                         </div>
 
                         {/* Form Body */}
@@ -126,7 +129,7 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess }) => {
                                         required
                                         type="text"
                                         placeholder="e.g. Master React in 30 Days"
-                                        className="w-full bg-slate-50 border border-slate-100 py-3.5 px-4 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-semibold text-slate-700"
+                                        className="w-full bg-slate-50 border border-slate-100 py-3.5 px-4 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-semibold text-slate-700"
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                     />
@@ -140,7 +143,7 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess }) => {
                                         required
                                         rows="3"
                                         placeholder="Briefly describe what students will learn..."
-                                        className="w-full bg-slate-50 border border-slate-100 py-3.5 px-4 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-semibold text-slate-700 resize-none"
+                                        className="w-full bg-slate-50 border border-slate-100 py-3.5 px-4 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-semibold text-slate-700 resize-none"
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     />
@@ -154,7 +157,7 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess }) => {
                                         <Layers size={14} /> Category
                                     </label>
                                     <select
-                                        className="w-full bg-slate-50 border border-slate-100 py-3.5 px-4 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-slate-700 appearance-none cursor-pointer"
+                                        className="w-full bg-slate-50 border border-slate-100 py-3.5 px-4 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-slate-700 appearance-none cursor-pointer"
                                         value={formData.category}
                                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                     >
@@ -174,9 +177,9 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess }) => {
                                                 key={lvl}
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, level: lvl })}
-                                                className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${
+                                                className={`flex-1 py-2 rounded-2xl text-[10px] font-black uppercase transition-all ${
                                                     formData.level === lvl 
-                                                    ? 'bg-white text-blue-600 shadow-sm' 
+                                                    ? 'bg-white text-primary shadow-sm' 
                                                     : 'text-slate-400 hover:text-slate-600'
                                                 }`}
                                             >
@@ -187,54 +190,77 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess }) => {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
-                                        <IndianRupee size={14} /> Course Price (Sale ₹)
-                                    </label>
-                                    <div className="relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
-                                        <input
-                                            required
-                                            type="number"
-                                            placeholder="0.00"
-                                            className="w-full bg-slate-50 border border-slate-100 py-3.5 pl-8 pr-4 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-slate-700"
-                                            value={formData.price}
-                                            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                                        />
+                            {isAdmin && (
+                                <>
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="space-y-1.5 flex flex-col h-full">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                    <IndianRupee size={14} /> Course Price (Sale ₹)
+                                                </label>
+                                                {formData.price && formData.originalPrice && Number(formData.originalPrice) > Number(formData.price) && (
+                                                    <motion.div 
+                                                        initial={{ opacity: 0, scale: 0.8 }}
+                                                        animate={{ opacity: 1, scale: 1 }}
+                                                        className="bg-accent/10 px-2 py-0.5 rounded-full flex items-center gap-1.5 border border-accent/20"
+                                                    >
+                                                        <Zap size={8} strokeWidth={3} className="text-accent animate-pulse" />
+                                                        <span className="text-[8px] font-black text-accent uppercase tracking-widest">
+                                                            {Math.round(((Number(formData.originalPrice) - Number(formData.price)) / Number(formData.originalPrice)) * 100)}% Save
+                                                        </span>
+                                                    </motion.div>
+                                                )}
+                                            </div>
+                                            <div className="relative mt-auto">
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
+                                                <input
+                                                    required={isAdmin}
+                                                    type="number"
+                                                    placeholder="0.00"
+                                                    className="w-full bg-slate-50 border border-slate-100 py-3.5 pl-8 pr-4 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-slate-700"
+                                                    value={formData.price}
+                                                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+        
+                                        <div className="space-y-1.5 flex flex-col h-full">
+                                            <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                <IndianRupee size={14} /> Original Price (Anchor ₹)
+                                            </label>
+                                            <div className="relative mt-auto">
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold opacity-50">₹</span>
+                                                <input
+                                                    type="number"
+                                                    placeholder="Optional"
+                                                    className="w-full bg-slate-50 border border-slate-100 py-3.5 pl-8 pr-4 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-slate-400 italic"
+                                                    value={formData.originalPrice}
+                                                    onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
-                                        <IndianRupee size={14} /> Original Price (Anchor ₹)
-                                    </label>
-                                    <div className="relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold opacity-50">₹</span>
-                                        <input
-                                            type="number"
-                                            placeholder="Optional"
-                                            className="w-full bg-slate-50 border border-slate-100 py-3.5 pl-8 pr-4 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-slate-400 italic"
-                                            value={formData.originalPrice}
-                                            onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {formData.originalPrice && Number(formData.originalPrice) < Number(formData.price) && (
-                                <p className="text-[10px] text-amber-600 font-black uppercase tracking-widest flex items-center gap-2 px-2">
-                                    <Zap size={12} strokeWidth={3} /> Warning: Sale price is higher than original price
-                                </p>
+        
+                                    {formData.originalPrice && Number(formData.originalPrice) < Number(formData.price) && (
+                                        <div className="bg-rose-50 border border-rose-100 p-3 rounded-2xl flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500 animate-pulse">
+                                                <Zap size={16} strokeWidth={3} />
+                                            </div>
+                                            <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest leading-tight">
+                                                Pricing Conflict: <br/> Sale price exceeds anchor price.
+                                            </p>
+                                        </div>
+                                    )}
+                                </>
                             )}
 
-                            <div className="bg-blue-50/70 border border-blue-100/50 rounded-[2rem] p-5 flex items-start gap-4">
-                                <div className="bg-blue-500/10 p-2.5 rounded-2xl">
-                                    <Layout size={20} className="text-blue-600" />
+                            <div className="bg-primary/5 border border-primary/10 rounded-2xl p-5 flex items-start gap-4">
+                                <div className="bg-primary/10 p-2.5 rounded-2xl">
+                                    <Layout size={20} className="text-primary" />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold text-blue-900 leading-tight">Wait, we're almost there!</p>
-                                    <p className="text-xs text-blue-600 mt-1.5 leading-relaxed font-medium">
+                                    <p className="text-sm font-black text-primary uppercase tracking-widest">Wait, we're almost there!</p>
+                                    <p className="text-xs text-slate-500 mt-1.5 leading-relaxed font-bold">
                                         By clicking create, your course shell will be generated. You can then add lesson modules, videos, and quizzes in the course editor.
                                     </p>
                                 </div>

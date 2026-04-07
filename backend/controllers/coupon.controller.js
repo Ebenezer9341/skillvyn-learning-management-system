@@ -83,7 +83,7 @@ export const listCoupons = catchAsync(async (req, res, next) => {
  * @desc Validate a coupon during checkout
  */
 export const validateCoupon = catchAsync(async (req, res, next) => {
-    const { code, cartItems } = req.body; // cartItems is array of { id, type: 'Course'|'Bundle', price }
+    const { code, cartItems } = req.body;
 
     const coupon = await Coupon.findOne({ code: code.toUpperCase(), status: 'active' });
 
@@ -115,6 +115,18 @@ export const validateCoupon = catchAsync(async (req, res, next) => {
         }
     }
 
+    // Fetch all courses and bundles upfront to avoid N+1 queries
+    const courseIds = cartItems.filter(i => i.type === 'Course').map(i => i.id);
+    const bundleIds = cartItems.filter(i => i.type === 'Bundle').map(i => i.id);
+
+    const [courses, bundles] = await Promise.all([
+        courseIds.length > 0 ? Course.find({ _id: { $in: courseIds } }).select('instructor') : [],
+        bundleIds.length > 0 ? Bundle.find({ _id: { $in: bundleIds } }).select('instructor') : []
+    ]);
+
+    const courseMap = new Map(courses.map(c => [c._id.toString(), c.instructor.toString()]));
+    const bundleMap = new Map(bundles.map(b => [b._id.toString(), b.instructor.toString()]));
+
     // Filter cart items that are applicable
     let discountableItems = [];
     let totalPriceOfApplicableItems = 0;
@@ -131,15 +143,8 @@ export const validateCoupon = catchAsync(async (req, res, next) => {
 
         // 2. Instructor Check (If mentor coupon)
         if (isApplicable && coupon.instructor) {
-            // Need to verify item belongs to this instructor
-            let itemData;
-            if (item.type === 'Course') {
-                itemData = await Course.findById(item.id);
-            } else {
-                itemData = await Bundle.findById(item.id);
-            }
-
-            if (!itemData || itemData.instructor.toString() !== coupon.instructor.toString()) {
+            const instructorId = item.type === 'Course' ? courseMap.get(item.id) : bundleMap.get(item.id);
+            if (!instructorId || instructorId !== coupon.instructor.toString()) {
                 isApplicable = false;
             }
         }
@@ -223,6 +228,17 @@ export const updateCoupon = catchAsync(async (req, res, next) => {
         return next(new AppError("You don't have permission to edit this coupon", httpStatus.FORBIDDEN));
     }
 
+    if (req.body.code && coupon.usageCount > 0) {
+        return next(new AppError('Cannot change a used coupon code', httpStatus.BAD_REQUEST));
+    }
+
+    // Double check percentage value for updates
+    const effectiveType = req.body.discountType || coupon.discountType;
+    const effectiveValue = req.body.discountValue !== undefined ? req.body.discountValue : coupon.discountValue;
+    if (effectiveType === 'percentage' && effectiveValue > 100) {
+        return next(new AppError('Percentage discount cannot exceed 100%', httpStatus.BAD_REQUEST));
+    }
+
     // Cleanup empty strings for optional numeric fields to ensure they are unset/null in DB
     const updateData = { ...req.body };
     ['maxDiscount', 'usageLimit', 'minOrderValue', 'usageLimitPerUser'].forEach(field => {
@@ -231,8 +247,6 @@ export const updateCoupon = catchAsync(async (req, res, next) => {
         }
     });
 
-    // Prevent Changing the code if already shared? Maybe allow but careful.
-    // For now, allow everything except changing creator fields
     const updatedCoupon = await Coupon.findByIdAndUpdate(
         req.params.id,
         { ...updateData, createdBy: coupon.createdBy, creatorRole: coupon.creatorRole },

@@ -25,7 +25,7 @@ const enrollmentSchema = new mongoose.Schema({
     completedLessons: [Number], // Array of lesson indices
     status: {
         type: String,
-        enum: ["active", "completed", "dropped"],
+        enum: ["active", "completed", "dropped", "pending"],
         default: "active"
     },
     enrolledAt: {
@@ -46,6 +46,8 @@ const enrollmentSchema = new mongoose.Schema({
             default: 'na'
         },
         mcqScore: Number,
+        mcqAttempts: { type: Number, default: 0 },
+        lastAttemptAt: Date,
         projectStatus: {
             type: String,
             enum: ['na', 'pending', 'submitted', 'approved', 'rejected'],

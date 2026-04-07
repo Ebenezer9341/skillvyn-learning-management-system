@@ -43,8 +43,8 @@ const MentorDashboard = () => {
             value: data?.stats?.totalCourses || '0',
             icon: BookOpen,
             change: 'Lifetime',
-            colorClass: 'text-blue-600',
-            bgClass: 'bg-blue-50',
+            colorClass: 'text-primary',
+            bgClass: 'bg-primary/5',
             suffix: 'Total courses'
         },
         {
@@ -52,8 +52,8 @@ const MentorDashboard = () => {
             value: data?.stats?.totalStudents || '0',
             icon: Users,
             change: 'All time',
-            colorClass: 'text-emerald-600',
-            bgClass: 'bg-emerald-50',
+            colorClass: 'text-accent',
+            bgClass: 'bg-accent/5',
             suffix: 'enrolled students'
         },
         {
@@ -61,8 +61,8 @@ const MentorDashboard = () => {
             value: data?.stats?.averageRating || '0.0',
             icon: Star,
             change: 'Feedback',
-            colorClass: 'text-amber-600',
-            bgClass: 'bg-amber-50',
+            colorClass: 'text-accent',
+            bgClass: 'bg-accent/5',
             suffix: '/ 5.0 rating'
         },
         {
@@ -70,8 +70,8 @@ const MentorDashboard = () => {
             value: data?.stats?.activeCourses || '0',
             icon: CheckCircle,
             change: 'Live',
-            colorClass: 'text-purple-600',
-            bgClass: 'bg-purple-50',
+            colorClass: 'text-secondary',
+            bgClass: 'bg-secondary/5',
             suffix: 'published currently'
         },
     ];
@@ -86,7 +86,7 @@ const MentorDashboard = () => {
                 </div>
                 <button 
                     onClick={fetchDashboardData}
-                    className="p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all text-slate-400 group"
+                    className="p-2.5 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all text-slate-400 group"
                     title="Refresh Stats"
                 >
                     <RefreshCw size={20} className={loading ? 'animate-spin' : 'group-active:rotate-180 transition-transform'} />
@@ -104,11 +104,11 @@ const MentorDashboard = () => {
                         className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow"
                     >
                         <div className="flex justify-between items-start mb-4">
-                            <div className={`${stat.bgClass} p-3 rounded-xl flex items-center justify-center`}>
+                            <div className={`${stat.bgClass} p-3 rounded-2xl flex items-center justify-center`}>
                                 <stat.icon size={24} className={stat.colorClass} />
                             </div>
                             <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                                stat.change.startsWith('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
+                                stat.change.startsWith('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-600'
                             }`}>
                                 {stat.change}
                             </span>
@@ -132,12 +132,12 @@ const MentorDashboard = () => {
                 >
                     <div className="p-6 border-b border-slate-100 flex justify-between items-center">
                         <h2 className="font-bold text-slate-900 flex items-center gap-2">
-                            <BookOpen size={18} className="text-blue-500" />
+                            <BookOpen size={18} className="text-primary" />
                             My Courses
                         </h2>
                         <button 
                             onClick={() => navigate('/mentor/courses')}
-                            className="text-blue-600 text-[10px] font-black uppercase tracking-widest hover:underline cursor-pointer"
+                            className="text-primary text-[10px] font-black uppercase tracking-widest hover:underline cursor-pointer"
                         >
                             View All
                         </button>
@@ -146,21 +146,21 @@ const MentorDashboard = () => {
                         {loading ? (
                             [...Array(4)].map((_, i) => (
                                 <div key={i} className="px-6 py-4 animate-pulse flex gap-4">
-                                    <div className="w-10 h-10 bg-slate-50 rounded-xl"></div>
+                                    <div className="w-10 h-10 bg-slate-50 rounded-2xl"></div>
                                     <div className="flex-1 space-y-2">
-                                        <div className="h-4 w-32 bg-slate-50 rounded"></div>
-                                        <div className="h-3 w-20 bg-slate-50 rounded"></div>
+                                        <div className="h-4 w-32 bg-slate-50 rounded-2xl"></div>
+                                        <div className="h-3 w-20 bg-slate-50 rounded-2xl"></div>
                                     </div>
                                 </div>
                             ))
                         ) : data?.recentCourses?.length > 0 ? (
                             data.recentCourses.map((course, idx) => (
                                 <div key={idx} className="px-6 py-4 flex items-center gap-4 hover:bg-slate-50/50 transition-colors cursor-pointer" onClick={() => navigate(`/courses/edit/${course._id}`)}>
-                                    <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
+                                    <div className="w-10 h-10 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-center flex-shrink-0">
                                         {course.thumbnail ? (
-                                            <img src={course.thumbnail} alt="" className="w-full h-full object-cover rounded-xl" />
+                                            <img src={course.thumbnail} alt="" className="w-full h-full object-cover rounded-2xl" />
                                         ) : (
-                                            <BookOpen size={18} className="text-blue-500" />
+                                            <BookOpen size={18} className="text-primary" />
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">
@@ -175,10 +175,10 @@ const MentorDashboard = () => {
                                         </div>
                                     </div>
                                     <div className="flex flex-col items-end gap-1">
-                                        <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                                        <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider ${
                                             course.status === 'published'
-                                                ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
-                                                : 'bg-amber-50 text-amber-700 border border-amber-100'
+                                                ? 'bg-accent/5 text-accent border border-accent/10'
+                                                : 'bg-primary/5 text-primary border border-primary/10'
                                         }`}>
                                             {course.status}
                                         </span>
@@ -218,9 +218,9 @@ const MentorDashboard = () => {
                                 <div key={i} className="p-6 animate-pulse space-y-3">
                                     <div className="flex gap-2">
                                         <div className="w-8 h-8 rounded-full bg-slate-50"></div>
-                                        <div className="h-4 w-24 bg-slate-50 rounded"></div>
+                                        <div className="h-4 w-24 bg-slate-50 rounded-2xl"></div>
                                     </div>
-                                    <div className="h-10 w-full bg-slate-50 rounded"></div>
+                                    <div className="h-10 w-full bg-slate-50 rounded-2xl"></div>
                                 </div>
                             ))
                         ) : data?.recentReviews?.length > 0 ? (
@@ -228,7 +228,7 @@ const MentorDashboard = () => {
                                 <div key={idx} className="p-6 hover:bg-slate-50/50 transition-colors">
                                     <div className="flex items-center justify-between mb-3">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary border border-primary/5 uppercase overflow-hidden">
+                                            <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary border border-primary/5 uppercase overflow-hidden">
                                                 {review.candidate?.avatar ? (
                                                     <img src={review.candidate.avatar} className="w-full h-full object-cover" />
                                                 ) : (
@@ -278,7 +278,7 @@ const MentorDashboard = () => {
                         </h2>
                         <button 
                             onClick={() => navigate('/mentor/audit-logs')}
-                            className="text-blue-600 text-[10px] font-black uppercase tracking-widest hover:underline cursor-pointer"
+                            className="text-primary text-[10px] font-black uppercase tracking-widest hover:underline cursor-pointer"
                         >
                             History
                         </button>
@@ -289,7 +289,6 @@ const MentorDashboard = () => {
                                 <div key={i} className="px-6 py-4 animate-pulse flex gap-3">
                                     <div className="w-9 h-9 bg-slate-50 rounded-full"></div>
                                     <div className="flex-1 space-y-2">
-                                        <div className="h-4 w-40 bg-slate-50 rounded"></div>
                                         <div className="h-3 w-24 bg-slate-50 rounded"></div>
                                     </div>
                                 </div>
@@ -307,8 +306,8 @@ const MentorDashboard = () => {
                                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{new Date(log.createdAt).toLocaleDateString()}</p>
                                     </div>
                                     <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter ${
-                                        log.action === 'CREATE' ? 'bg-blue-50 text-blue-700' : 
-                                        log.action === 'UPDATE' ? 'bg-amber-50 text-amber-700' :
+                                        log.action === 'CREATE' ? 'bg-primary/5 text-primary border border-primary/10' : 
+                                        log.action === 'UPDATE' ? 'bg-accent/5 text-accent border border-accent/10' :
                                         'bg-slate-50 text-slate-700'
                                     }`}>
                                         {log.action}

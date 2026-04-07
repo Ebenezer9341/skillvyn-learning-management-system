@@ -1,16 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Users,
     Search,
     Filter,
     MoreVertical,
-    Mail,
-    Phone,
     Download,
     CheckCircle,
-    CheckCircle2,
-    Clock,
     BookOpen,
     TrendingUp,
     MessageSquare,
@@ -20,11 +16,36 @@ import {
     Award,
     Github,
     XCircle,
-    ReceiptText
+    Activity,
 } from 'lucide-react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip as ChartTooltip,
+  Filler,
+  Legend,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  ChartTooltip,
+  Filler,
+  Legend
+);
+
 import api from '../../services/api';
 import { toast } from 'react-toastify';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { 
     useFloating, 
     autoUpdate, 
@@ -36,7 +57,7 @@ import {
     useRole, 
     useClick,
     FloatingPortal, 
-    FloatingFocusManager 
+    FloatingFocusManager
 } from '@floating-ui/react';
 
 const StudentRowActions = ({ enrollment, mode }) => {
@@ -106,12 +127,11 @@ const StudentRowActions = ({ enrollment, mode }) => {
                             >
                                 <button
                                     onClick={() => handleAction('/user')}
-                                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-all duration-200"
+                                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-slate-600 hover:bg-primary/5 hover:text-primary rounded-xl transition-all duration-200"
                                 >
                                     <ExternalLink size={14} className="opacity-70" />
                                     <span className="text-[10px] font-black uppercase tracking-widest">View Profile</span>
                                 </button>
-                                <div className="h-px bg-slate-100 my-1 mx-2" />
                                 
                             </motion.div>
                         </FloatingFocusManager>
@@ -140,8 +160,11 @@ const Students = ({
     const [page, setPage] = useState(1);
     const [pagination, setPagination] = useState({ total: 0, pages: 1 });
     const [reviewingEnrollment, setReviewingEnrollment] = useState(null);
+    const [statsView, setStatsView] = useState('month'); // 'month' or 'day'
+    const [activeStatsFilter, setActiveStatsFilter] = useState('All');
     const [reviewFeedback, setReviewFeedback] = useState('');
     const [isReviewSubmitting, setIsReviewSubmitting] = useState(false);
+    const { user: currentUser } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
     
@@ -154,10 +177,11 @@ const Students = ({
     const statsEndpoint = mode === 'mentor' ? '/api/enrollments/mentor/student-stats' : '/api/enrollments/all-student-stats';
     const studentsEndpoint = mode === 'mentor' ? '/api/enrollments/mentor/students' : '/api/enrollments/all-students';
 
-    const fetchStats = async () => {
+    const fetchStats = async (status = 'All') => {
         setStatsLoading(true);
+        setActiveStatsFilter(status);
         try {
-            const response = await api.get(statsEndpoint);
+            const response = await api.get(`${statsEndpoint}?status=${status}`);
             setStats(response.data.data);
         } catch (err) {
             console.error('Stats fetch error:', err);
@@ -240,25 +264,17 @@ const Students = ({
             label: mode === 'mentor' ? 'Your Students' : 'Platform Students',
             value: stats.totalStudents,
             icon: Users,
-            colorClass: 'text-indigo-600',
-            bgClass: 'bg-indigo-50',
+            colorClass: 'text-primary',
+            bgClass: 'bg-primary/10',
             change: 'Lifetime enrollment'
         },
         {
             label: 'Active Learners',
             value: stats.activeStudents,
             icon: TrendingUp,
-            colorClass: 'text-emerald-600',
-            bgClass: 'bg-emerald-50',
+            colorClass: 'text-accent',
+            bgClass: 'bg-accent/10',
             change: 'Currently learning'
-        },
-        {
-            label: 'Avg. Progress',
-            value: `${stats.avgProgress}%`,
-            icon: BookOpen,
-            colorClass: 'text-purple-600',
-            bgClass: 'bg-purple-50',
-            change: 'Course completion health'
         },
         {
             label: 'Total Completed',
@@ -270,6 +286,56 @@ const Students = ({
         }
     ];
 
+    const chartData = {
+        labels: statsView === 'month' 
+            ? (stats.growth?.map(g => g.label) || ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan'])
+            : (stats.dailyGrowth?.map(g => g.label) || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']),
+        datasets: [
+            {
+                label: statsView === 'month' ? 'Monthly Enrollments' : 'Daily Enrollments',
+                data: statsView === 'month' 
+                    ? (stats.growth?.map(g => g.count) || [0, 0, 0, 0, 0, 0])
+                    : (stats.dailyGrowth?.map(g => g.count) || [0, 0, 0, 0, 0, 0, 0]),
+                borderColor: '#05C4FE',
+                backgroundColor: 'rgba(5, 196, 254, 0.15)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#006CFA',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+            }
+        ]
+    };
+
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: '#001988',
+                titleColor: '#fff',
+                bodyColor: '#A8EBFF',
+                padding: 12,
+                displayColors: false,
+                callbacks: { label: (context) => `${context.parsed.y} Candidates` }
+            }
+        },
+        scales: {
+            x: {
+                grid: { display: false, drawBorder: false },
+                ticks: { color: '#64748b', font: { size: 10, family: 'Inter, sans-serif' } }
+            },
+            y: {
+                grid: { color: '#f1f5f9', drawBorder: false, borderDash: [5, 5] },
+                ticks: { color: '#64748b', font: { size: 10, family: 'Inter, sans-serif' }, maxTicksLimit: 5 }
+            }
+        }
+    };
+
     return (
         <div className="p-4 md:p-8 bg-slate-50 min-h-screen font-sans">
             {/* Header */}
@@ -278,80 +344,161 @@ const Students = ({
                     <h1 className="text-xl md:text-2xl font-black text-slate-900 leading-tight">{title}</h1>
                     <p className="text-slate-500 mt-1 text-sm md:text-base font-medium">{description}</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl hover:bg-slate-50 transition-all font-semibold shadow-sm text-sm">
-                        <Download size={18} />
-                        <span>Export CSV</span>
-                    </button>
-                    {mode === 'mentor' && (
-                        <button className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl transition-all font-semibold shadow-lg shadow-indigo-200 text-sm">
-                            <MessageSquare size={18} />
-                            <span>Bulk Message</span>
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="relative group flex-1 md:w-80">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
+                        <input
+                            type="text"
+                            placeholder={mode === 'mentor' ? "Search for candidates..." : "Search candidates..."}
+                            className="block w-full md:w-80 pl-12 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all text-sm font-medium shadow-sm placeholder:text-slate-400"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <button 
+                            onClick={() => {/* Implement CSV download logic */}}
+                            className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-2xl hover:bg-slate-50 transition-all font-semibold shadow-sm text-sm active:scale-95 whitespace-nowrap"
+                        >
+                            <Download size={18} />
+                            <span className="hidden sm:inline">Export Data</span>
                         </button>
-                    )}
+                        
+                        {mode === 'mentor' && (
+                            <button className="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2.5 rounded-2xl transition-all font-semibold shadow-lg shadow-primary/20 text-sm active:scale-95 whitespace-nowrap">
+                                <MessageSquare size={18} />
+                                <span className="hidden sm:inline">Bulk Message</span>
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
 
-            {/* Stats Summary */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8 text-sans">
-                {statCards.map((stat, idx) => (
-                    <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.1 }}
-                        className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group"
-                    >
+            {/* Analytics Block */}
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                style={{ fontFamily: 'Graphik, sans-serif' }}
+                className="bg-white rounded-2xl p-8 md:p-12 mb-8 relative overflow-hidden shadow-sm text-slate-800 border border-slate-100"
+            >
+                {/* Abstract gradients strictly using brand colors - subtler for light mode */}
+                <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full blur-[140px] -translate-y-1/2 translate-x-1/3 pointer-events-none" style={{ backgroundColor: '#05C4FE', opacity: 0.05 }} />
+                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] rounded-full blur-[120px] translate-y-1/3 -translate-x-1/4 pointer-events-none" style={{ backgroundColor: '#006CFA', opacity: 0.08 }} />
+                
+                <div className="relative z-10">
+                    <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8" style={{ borderBottomColor: '#f1f5f9', borderBottomWidth: '1px' }}>
+                        <div>
+                            <h2 className="text-2xl md:text-3xl font-black text-secondary tracking-tight flex items-center gap-3">
+                                <TrendingUp size={28} className="text-primary" />
+                                Candidates Analytics
+                            </h2>
+                            <p style={{ fontFamily: 'Inter, sans-serif' }} className="text-slate-500 font-medium mt-2 text-sm max-w-xl">
+                                Real-time algorithmic breakdown of candidate engagement, learning progress, and platform progression statistics.
+                            </p>
+                        </div>
                         {statsLoading && (
-                            <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center z-10">
-                                <Loader2 size={18} className="text-blue-500 animate-spin" />
+                            <div className="flex items-center gap-2 px-4 py-2 rounded-2xl border" style={{ color: '#05C4FE', backgroundColor: 'rgba(5,196,254,0.1)', borderColor: 'rgba(5,196,254,0.2)' }}>
+                                <Loader2 size={16} className="animate-spin" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">Live Syncing</span>
                             </div>
                         )}
-                        <div className="flex justify-between items-start mb-4">
-                            <div className={`${stat.bgClass} p-3 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner-sm inner-shadow`}>
-                                <stat.icon size={24} className={stat.colorClass} />
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
+                        {/* Stats left column */}
+                        <div className="lg:col-span-1 flex flex-col justify-between gap-6 md:gap-8 min-h-[300px]">
+                            {statCards.map((stat, idx) => (
+                                <div 
+                                    key={idx} 
+                                    onClick={() => {
+                                        let newStatus = 'All';
+                                        if (stat.label.toLowerCase().includes('active')) {
+                                            newStatus = 'active';
+                                        } else if (stat.label.toLowerCase().includes('completed')) {
+                                            newStatus = 'completed';
+                                        }
+                                        fetchStats(newStatus);
+                                    }}
+                                    className={`relative group p-5 rounded-2xl transition-all border cursor-pointer flex-1 flex flex-col justify-center ${
+                                        (stat.label.toLowerCase().includes('active') && activeStatsFilter === 'active') ||
+                                        (stat.label.toLowerCase().includes('completed') && activeStatsFilter === 'completed') ||
+                                        ((stat.label.toLowerCase().includes('your') || stat.label.toLowerCase().includes('platform')) && activeStatsFilter === 'All')
+                                        ? 'bg-primary/5 border-primary/20 ring-1 ring-primary/10'
+                                        : 'hover:bg-slate-50 border-transparent hover:border-slate-100'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-4 mb-3">
+                                        <div className="w-10 h-10 rounded-2xl flex items-center justify-center border shadow-sm bg-white border-slate-100">
+                                            <stat.icon size={18} className="text-primary" />
+                                        </div>
+                                        <h3 style={{ fontFamily: 'Inter, sans-serif' }} className="text-[10px] font-black uppercase tracking-[0.2em] leading-tight text-slate-400 flex-1">
+                                            {stat.label}
+                                        </h3>
+                                    </div>
+                                    <div className="flex items-baseline gap-3">
+                                        <div className="text-4xl lg:text-5xl font-black tracking-tighter text-secondary ml-1">
+                                            {statsLoading ? '-' : stat.value}
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 inline-flex items-center gap-2 ml-1">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                        <span style={{ fontFamily: 'Inter, sans-serif' }} className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400">
+                                            {stat.change}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Chart right column */}
+                        <div className="lg:col-span-2 min-h-[300px] w-full border rounded-2xl p-6 relative flex flex-col bg-slate-50/50 border-slate-100">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 style={{ fontFamily: 'Inter, sans-serif' }} className="text-secondary text-sm font-bold flex items-center gap-2">
+                                    <Activity size={16} className="text-primary" /> Enrollment Trends
+                                </h3>
+                                <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+                                    <button 
+                                        onClick={() => setStatsView('month')}
+                                        className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${statsView === 'month' ? 'bg-primary text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                                    >
+                                        Month
+                                    </button>
+                                    <button 
+                                        onClick={() => setStatsView('day')}
+                                        className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${statsView === 'day' ? 'bg-primary text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                                    >
+                                        Day
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="flex-1 w-full h-full relative min-h-[250px]">
+                                <Line data={chartData} options={chartOptions} />
                             </div>
                         </div>
-                        <h3 className="text-slate-500 text-[10px] font-black uppercase tracking-widest leading-none outline-none">{stat.label}</h3>
-                        <p className="text-xl md:text-2xl font-black text-slate-900 mt-1">{stat.value}</p>
-                        <p className="text-[10px] mt-2 font-black text-slate-400 uppercase tracking-tight leading-none italic">
-                            {stat.change}
-                        </p>
-                    </motion.div>
-                ))}
-            </div>
+                    </div>
+                </div>
+            </motion.div>
 
             {/* Students Table Section */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden text-sans shadow-slate-200/50">
                 <div className="p-8 border-b border-slate-100">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <h2 className="text-lg font-black text-slate-900 flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center inner-shadow">
+                            <div className="w-10 h-10 rounded-2xl bg-primary/5 text-primary flex items-center justify-center inner-shadow">
                                 <Users size={20} />
                             </div>
                             {mode === 'mentor' ? 'My Students' : 'Platform Candidates'}
                         </h2>
-                        <div className="flex flex-wrap items-center gap-3">
-                            <div className="relative flex-1 md:w-80">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                                <input
-                                    type="text"
-                                    placeholder={mode === 'mentor' ? "Search for candidates by name..." : "Search by candidate name or email..."}
-                                    className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100/50 focus:border-blue-400 transition-all text-sm font-medium"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                />
-                            </div>
-                            <button 
-                                onClick={() => setShowFilters(!showFilters)}
-                                className={`flex items-center gap-2 px-5 py-3 border rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${
-                                    showFilters ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-100' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                                }`}
-                            >
-                                <Filter size={14} />
-                                <span>{showFilters ? 'Hide Filters' : 'Filters'}</span>
-                            </button>
-                        </div>
+                        <button 
+                            onClick={() => setShowFilters(!showFilters)}
+                            className={`flex items-center gap-2 px-5 py-3 border rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${
+                                showFilters ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                            }`}
+                        >
+                            <Filter size={14} />
+                            <span>{showFilters ? 'Hide Filters' : 'Filters'}</span>
+                        </button>
                     </div>
                 </div>
 
@@ -369,7 +516,7 @@ const Students = ({
                                     <select 
                                         value={filterCourse}
                                         onChange={(e) => setFilterCourse(e.target.value)}
-                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-blue-100/50 outline-none active:scale-95 transition-all shadow-sm"
+                                        className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/5 outline-none active:scale-95 transition-all shadow-sm"
                                     >
                                         {uniqueCourses.map(c => <option key={c} value={c}>{c}</option>)}
                                     </select>
@@ -379,7 +526,7 @@ const Students = ({
                                     <select 
                                         value={filterStatus}
                                         onChange={(e) => setFilterStatus(e.target.value)}
-                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-blue-100/50 outline-none active:scale-95 transition-all shadow-sm"
+                                        className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/5 outline-none active:scale-95 transition-all shadow-sm"
                                     >
                                         <option value="All">All statuses</option>
                                         <option value="active">Active</option>
@@ -391,7 +538,7 @@ const Students = ({
                                     <select 
                                         value={filterDate}
                                         onChange={(e) => setFilterDate(e.target.value)}
-                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-blue-100/50 outline-none active:scale-95 transition-all shadow-sm"
+                                        className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/5 outline-none active:scale-95 transition-all shadow-sm"
                                     >
                                         <option value="All">All time</option>
                                         <option value="today">Joined Today</option>
@@ -410,7 +557,6 @@ const Students = ({
                             <tr className="bg-slate-50/50 border-b border-slate-100">
                                 <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Candidate</th>
                                 <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Enrolled Course</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Learning Progress</th>
                                 <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Status</th>
                                 <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Certification</th>
                                 <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Joined</th>
@@ -423,7 +569,6 @@ const Students = ({
                                     <tr key={i} className="animate-pulse">
                                         <td className="px-8 py-6"><div className="h-10 w-40 bg-slate-50 rounded-xl"></div></td>
                                         <td className="px-8 py-6"><div className="h-6 w-32 bg-slate-50 rounded-lg"></div></td>
-                                        <td className="px-8 py-6"><div className="h-4 w-24 bg-slate-50 rounded-full"></div></td>
                                         <td className="px-8 py-6"><div className="h-6 w-16 bg-slate-50 rounded-full"></div></td>
                                         <td className="px-8 py-6"><div className="h-6 w-16 bg-slate-50 rounded-full"></div></td>
                                         <td className="px-8 py-6"><div className="h-4 w-20 bg-slate-50 rounded"></div></td>
@@ -436,8 +581,8 @@ const Students = ({
                                         <td className="px-8 py-6">
                                             <div className="min-w-0">
                                                 <button 
-                                                    onClick={() => navigate(`/${user.role}/user/${enrollment.candidate?._id}`)}
-                                                    className="text-sm font-black text-slate-900 truncate hover:text-blue-600 transition-colors text-left cursor-pointer"
+                                                    onClick={() => navigate(`/${currentUser?.role || location.pathname.split('/')[1]}/user/${enrollment.candidate?._id}`)}
+                                                    className="text-sm font-black text-slate-900 truncate hover:text-primary transition-colors text-left cursor-pointer"
                                                 >
                                                     {enrollment.candidate?.firstName} {enrollment.candidate?.lastName}
                                                 </button>
@@ -446,7 +591,7 @@ const Students = ({
                                         </td>
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner-sm">
+                                                <div className="w-8 h-8 rounded-2xl bg-primary/5 text-primary flex items-center justify-center shadow-inner-sm">
                                                     <BookOpen size={14} />
                                                 </div>
                                                 <span className="text-sm font-bold text-slate-700 truncate max-w-[150px]">
@@ -455,19 +600,11 @@ const Students = ({
                                             </div>
                                         </td>
                                         <td className="px-8 py-6">
-                                            <div className="flex items-center gap-3 w-32">
-                                                <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                                                    <motion.div
-                                                        initial={{ width: 0 }}
-                                                        animate={{ width: `${enrollment.progress}%` }}
-                                                        transition={{ duration: 1, delay: 0.2 }}
-                                                        className={`h-full rounded-full ${
-                                                            enrollment.progress > 80 ? 'bg-emerald-500' :
-                                                            enrollment.progress > 40 ? 'bg-blue-500' : 'bg-amber-500'
-                                                        }`}
-                                                    />
-                                                </div>
-                                                <span className="text-[10px] font-black text-slate-900">{enrollment.progress}%</span>
+                                            <div className="flex items-center gap-2">
+                                                <div className={`w-2 h-2 rounded-full ${enrollment.status === 'completed' ? 'bg-accent' : 'bg-primary animate-pulse'}`} />
+                                                <span className={`text-[10px] font-black uppercase tracking-widest ${enrollment.status === 'completed' ? 'text-accent' : 'text-primary'}`}>
+                                                    {enrollment.status}
+                                                </span>
                                             </div>
                                         </td>
                                         <td className="px-8 py-6">
@@ -477,8 +614,8 @@ const Students = ({
                                                 'bg-rose-50 text-rose-700 border border-rose-100'
                                             }`}>
                                                 <span className={`w-1.5 h-1.5 rounded-full mr-2 ${
-                                                    enrollment.status === 'completed' ? 'bg-emerald-500' :
-                                                    enrollment.status === 'active' ? 'bg-blue-500' : 'bg-rose-500'
+                                                    enrollment.status === 'completed' ? 'bg-accent' :
+                                                    enrollment.status === 'active' ? 'bg-primary' : 'bg-rose-500'
                                                 }`}></span>
                                                 {enrollment.status}
                                             </span>
@@ -491,7 +628,7 @@ const Students = ({
                                             ) : enrollment.certificationTracking?.projectStatus === 'submitted' ? (
                                                 <button 
                                                     onClick={() => setReviewingEnrollment(enrollment)}
-                                                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-[9px] font-black uppercase tracking-widest border border-indigo-100 hover:bg-indigo-100 transition-all animate-pulse"
+                                                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-secondary/5 text-secondary rounded-2xl text-[9px] font-black uppercase tracking-widest border border-secondary/10 hover:bg-secondary/10 transition-all animate-pulse"
                                                 >
                                                     <Award size={14} /> Review Project
                                                 </button>
@@ -522,7 +659,7 @@ const Students = ({
                                 <tr>
                                     <td colSpan="7" className="px-8 py-24 text-center">
                                         <div className="flex flex-col items-center gap-4">
-                                            <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center border border-slate-100 text-slate-200">
+                                            <div className="w-20 h-20 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 text-slate-200">
                                                 <Users size={40} strokeWidth={1.5} />
                                             </div>
                                             <div>
@@ -568,12 +705,12 @@ const Students = ({
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl relative z-10 overflow-hidden border border-slate-100"
+                            className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl relative z-10 overflow-hidden border border-slate-100"
                         >
                             <div className="p-10 md:p-12">
                                 <div className="flex items-center justify-between mb-10">
                                     <div className="flex items-center gap-5">
-                                        <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-inner-sm">
+                                        <div className="w-14 h-14 rounded-2xl bg-secondary/5 text-secondary flex items-center justify-center shadow-inner-sm">
                                             <Award size={28} />
                                         </div>
                                         <div>
@@ -587,7 +724,7 @@ const Students = ({
                                 </div>
  
                                 <div className="space-y-8">
-                                    <div className="bg-slate-50 p-7 rounded-[2rem] border border-slate-100 shadow-inner-sm">
+                                    <div className="bg-slate-50 p-7 rounded-2xl border border-slate-100 shadow-inner-sm">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Submitted Repository URL</p>
                                         <a 
                                             href={reviewingEnrollment.certificationTracking?.projectUrl} 
@@ -608,7 +745,7 @@ const Students = ({
                                             value={reviewFeedback}
                                             onChange={(e) => setReviewFeedback(e.target.value)}
                                             placeholder="Provide technical feedback for the candidate. If rejected, they will need to address these points before resubmitting."
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-[1.5rem] p-6 text-sm font-medium focus:ring-8 focus:ring-indigo-100/50 outline-none transition-all placeholder:text-slate-300 shadow-inner-sm"
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-6 text-sm font-medium focus:ring-8 focus:ring-accent/10 outline-none transition-all placeholder:text-slate-300 shadow-inner-sm"
                                         />
                                     </div>
  
@@ -616,14 +753,14 @@ const Students = ({
                                         <button 
                                             onClick={() => handleReviewSubmit('rejected')}
                                             disabled={isReviewSubmitting}
-                                            className="py-5 rounded-[1.5rem] font-black text-[11px] uppercase tracking-widest text-rose-500 bg-rose-50 hover:bg-rose-100 transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95 border border-rose-100 shadow-sm"
+                                            className="py-5 rounded-2xl font-black text-[11px] uppercase tracking-widest text-rose-500 bg-rose-50 hover:bg-rose-100 transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95 border border-rose-100 shadow-sm"
                                         >
                                             <XCircle size={18} /> Reject Submission
                                         </button>
                                         <button 
                                             onClick={() => handleReviewSubmit('approved')}
                                             disabled={isReviewSubmitting}
-                                            className="py-5 bg-emerald-500 text-white rounded-[1.5rem] font-black text-[11px] uppercase tracking-widest shadow-xl shadow-emerald-200 hover:bg-emerald-600 transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95"
+                                            className="py-5 bg-accent text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-accent/20 hover:bg-accent/90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95"
                                         >
                                             {isReviewSubmitting ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle size={18} />}
                                             Approve & Certify

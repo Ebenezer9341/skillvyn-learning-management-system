@@ -22,6 +22,91 @@ export const getMyTransactions = catchAsync(async (req, res, next) => {
 });
 
 /**
+ * @desc Get mentor revenue dashboard data - monthly totals and per-course breakdown
+ */
+export const getMentorRevenue = catchAsync(async (req, res, next) => {
+    const { startDate, endDate } = req.query;
+
+    let dateFilter = { status: 'success', instructor: req.user._id };
+    
+    if (startDate || endDate) {
+        dateFilter.createdAt = {};
+        if (startDate) dateFilter.createdAt.$gte = new Date(startDate);
+        if (endDate) dateFilter.createdAt.$lte = new Date(endDate);
+    }
+
+    const monthlyRevenue = await Transaction.aggregate([
+        { $match: dateFilter },
+        {
+            $group: {
+                _id: {
+                    year: { $year: "$createdAt" },
+                    month: { $month: "$createdAt" }
+                },
+                totalRevenue: { $sum: "$amount" },
+                transactionCount: { $sum: 1 }
+            }
+        },
+        { $sort: { "_id.year": -1, "_id.month": -1 } }
+    ]);
+
+    const courseRevenue = await Transaction.aggregate([
+        { $match: dateFilter },
+        {
+            $group: {
+                _id: "$course",
+                totalRevenue: { $sum: "$amount" },
+                transactionCount: { $sum: 1 }
+            }
+        },
+        { $sort: { totalRevenue: -1 } },
+        {
+            $lookup: {
+                from: "courses",
+                localField: "_id",
+                foreignField: "_id",
+                as: "courseInfo"
+            }
+        },
+        { $unwind: "$courseInfo" },
+        {
+            $project: {
+                courseId: "$_id",
+                courseTitle: "$courseInfo.title",
+                totalRevenue: 1,
+                transactionCount: 1
+            }
+        }
+    ]);
+
+    const overallStats = await Transaction.aggregate([
+        { $match: { status: 'success', instructor: req.user._id } },
+        {
+            $group: {
+                _id: null,
+                totalRevenue: { $sum: "$amount" },
+                totalTransactions: { $sum: 1 },
+                avgTransaction: { $avg: "$amount" }
+            }
+        }
+    ]);
+
+    res.status(httpStatus.SUCCESS).json({
+        status: 'success',
+        data: {
+            monthlyRevenue: monthlyRevenue.map(m => ({
+                year: m._id.year,
+                month: m._id.month,
+                totalRevenue: m.totalRevenue,
+                transactionCount: m.transactionCount
+            })),
+            courseRevenue,
+            overall: overallStats[0] || { totalRevenue: 0, totalTransactions: 0, avgTransaction: 0 }
+        }
+    });
+});
+
+/**
  * @desc Get single transaction details (for invoice)
  */
 export const getTransactionDetail = catchAsync(async (req, res, next) => {
@@ -105,5 +190,6 @@ export default {
     getMyTransactions,
     getTransactionDetail,
     getInvoicesByCandidate,
-    getAllTransactions
+    getAllTransactions,
+    getMentorRevenue
 };

@@ -117,7 +117,7 @@ const Certificate = () => {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
                 <div className="text-center">
-                    <Loader2 size={40} className="animate-spin text-indigo-600 mx-auto mb-4" />
+                    <Loader2 size={40} className="animate-spin text-primary mx-auto mb-4" />
                     <p className="text-slate-500 font-black uppercase tracking-widest text-xs">Authenticating Certificate...</p>
                 </div>
             </div>
@@ -144,7 +144,7 @@ const Certificate = () => {
                         <button 
                             onClick={handleDownload}
                             disabled={downloading}
-                            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
+                            className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
                         >
                             {downloading ? (
                                 <>
@@ -164,12 +164,12 @@ const Certificate = () => {
                 <motion.div 
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-white rounded-[2rem] shadow-2xl overflow-hidden relative border-[16px] border-slate-50 p-1"
+                    className="bg-white rounded-2xl shadow-2xl overflow-hidden relative border-[16px] border-slate-50 p-1"
                 >
                     <div 
                         ref={certificateRef}
                         id="certificate-content"
-                        className="border-[2px] rounded-[1.5rem] p-16 relative overflow-hidden text-center space-y-12 bg-white"
+                        className="border-[2px] rounded-2xl p-16 relative overflow-hidden text-center space-y-12 bg-white"
                         style={{ borderColor: '#e2e8f0' }}
                     >
                         <div className="absolute top-0 right-0 w-96 h-96 rounded-full -mr-48 -mt-48 blur-3xl opacity-50" style={{ backgroundColor: '#eef2ff' }} />
@@ -181,13 +181,13 @@ const Certificate = () => {
                             </div>
 
                             <div className="space-y-4">
-                                <p className="font-black uppercase tracking-[0.4em] text-xs" style={{ color: '#4f46e5' }}>Certificate of Completion</p>
+                                <p className="font-black uppercase tracking-[0.4em] text-xs" style={{ color: '#006CFA' }}>Certificate of Completion</p>
                                 <h1 className="text-2xl font-medium italic" style={{ color: '#64748b' }}>This is to certify that</h1>
                                 <div className="py-4">
-                                    <h2 className="text-6xl font-black tracking-tight underline underline-offset-8" style={{ color: '#0f172a', textDecorationColor: 'rgba(79, 70, 229, 0.2)' }}>{data.studentName}</h2>
+                                    <h2 className="text-6xl font-black tracking-tight underline underline-offset-8" style={{ color: '#001988', textDecorationColor: 'rgba(0, 108, 250, 0.2)' }}>{data.studentName}</h2>
                                 </div>
                                 <h3 className="text-xl font-medium italic" style={{ color: '#64748b' }}>has successfully completed the course</h3>
-                                <div className="inline-block px-8 py-3 text-white rounded-full font-black text-2xl mt-4 shadow-xl" style={{ backgroundColor: '#0f172a' }}>
+                                <div className="inline-block px-8 py-3 text-white rounded-2xl font-black text-2xl mt-4 shadow-xl" style={{ backgroundColor: '#001988' }}>
                                     {data.courseTitle}
                                 </div>
                             </div>
@@ -195,16 +195,16 @@ const Certificate = () => {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 pt-12 items-end">
                                 <div className="space-y-4 text-center">
                                     <div className="h-[1px] w-full mb-4" style={{ backgroundColor: '#e2e8f0' }} />
-                                    <p className="font-black" style={{ color: '#0f172a' }}>{data.instructorName}</p>
+                                    <p className="font-black" style={{ color: '#001988' }}>{data.instructorName}</p>
                                     <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#94a3b8' }}>Lead Instructor</p>
                                 </div>
                                 
                                 <div className="flex flex-col items-center">
                                     <div className="w-32 h-32 rounded-full flex items-center justify-center relative bg-white shadow-inner" style={{ border: '8px solid #f0f4ff' }}>
                                         <div className="w-24 h-24 rounded-full border-2 border-dashed flex items-center justify-center" style={{ borderColor: '#c7d2fe' }}>
-                                            <Award size={48} style={{ color: '#4f46e5' }} />
+                                            <Award size={48} style={{ color: '#006CFA' }} />
                                         </div>
-                                        <div className="absolute -bottom-2 text-white px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest" style={{ backgroundColor: '#4f46e5' }}>VERIFIED</div>
+                                        <div className="absolute -bottom-2 text-white px-3 py-1 rounded-2xl text-[8px] font-black uppercase tracking-widest" style={{ backgroundColor: '#006CFA' }}>VERIFIED</div>
                                     </div>
                                 </div>
 

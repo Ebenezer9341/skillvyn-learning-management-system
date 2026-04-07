@@ -14,6 +14,7 @@ export default function Home() {
                     </Link>
 
                     <div className="hidden md:flex items-center gap-8">
+                        <Link to="/course-catalog" className="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Courses</Link>
                         <a href="#features" className="text-sm font-semibold text-slate-600 hover:text-primary transition-colors">Features</a>
                         <a href="#about" className="text-sm font-semibold text-slate-600 hover:text-primary transition-colors">About</a>
                         <Link to="/login" className="text-sm font-semibold text-slate-600 hover:text-primary transition-colors">Sign In</Link>
@@ -54,7 +55,7 @@ export default function Home() {
                             transition={{ duration: 0.8, delay: 0.4 }}
                             className="flex flex-col sm:flex-row items-center gap-4"
                         >
-                            <Link to="/register" className="w-full sm:w-auto px-8 py-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-2xl shadow-2xl shadow-primary/30 flex items-center justify-center gap-2 transition-all hover:-translate-y-1 active:translate-y-0">
+                            <Link to="/course-catalog" className="w-full sm:w-auto px-8 py-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-2xl shadow-2xl shadow-primary/30 flex items-center justify-center gap-2 transition-all hover:-translate-y-1 active:translate-y-0">
                                 Explore Courses <ArrowRight size={20} />
                             </Link>
                             <button className="w-full sm:w-auto px-8 py-4 bg-white border border-slate-200 hover:border-slate-300 text-slate-900 font-bold rounded-2xl shadow-sm transition-all hover:bg-slate-50">

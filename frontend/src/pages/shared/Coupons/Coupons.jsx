@@ -101,7 +101,7 @@ const CouponRowActions = ({ coupon, onEdit, onDelete, onToggleStatus }) => {
                                         setIsOpen(false);
                                         onEdit(coupon);
                                     }}
-                                    className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-all duration-200 group"
+                                    className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-primary/5 hover:text-primary rounded-xl transition-all duration-200 group"
                                 >
                                     <Edit2 size={16} className="opacity-70 group-hover:scale-110 transition-transform" />
                                     <span className="text-[10px] font-black uppercase tracking-widest">Edit Details</span>
@@ -113,7 +113,7 @@ const CouponRowActions = ({ coupon, onEdit, onDelete, onToggleStatus }) => {
                                         onToggleStatus(coupon);
                                     }}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
-                                        coupon.status === 'active' ? 'text-amber-500 hover:bg-amber-50' : 'text-emerald-500 hover:bg-emerald-50'
+                                        coupon.status === 'active' ? 'text-amber-500 hover:bg-amber-50' : 'text-accent hover:bg-accent/5'
                                     }`}
                                 >
                                     {coupon.status === 'active' ? (
@@ -159,6 +159,7 @@ const Coupons = () => {
     const [selectedCoupon, setSelectedCoupon] = useState(null);
     const [couponToDelete, setCouponToDelete] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [activeCardFilter, setActiveCardFilter] = useState('all');
 
     const fetchCoupons = async () => {
         setLoading(true);
@@ -206,21 +207,33 @@ const Coupons = () => {
         }
     };
 
-    const filteredCoupons = coupons.filter(c => 
-        c.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredCoupons = coupons.filter(c => {
+        const matchesSearch = c.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            c.description?.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        const matchesCard = activeCardFilter === 'all' || 
+                           (activeCardFilter === 'active' && c.status === 'active' && (!c.expiryDate || new Date(c.expiryDate) >= new Date())) ||
+                           (activeCardFilter === 'paused' && c.status === 'paused' && (!c.expiryDate || new Date(c.expiryDate) >= new Date())) ||
+                           (activeCardFilter === 'expired' && c.expiryDate && new Date(c.expiryDate) < new Date()) ||
+                           (activeCardFilter === 'used' && c.usageCount > 0);
+
+        return matchesSearch && matchesCard;
+    });
 
     const stats = {
         total: coupons.length,
-        active: coupons.filter(c => c.status === 'active').length,
+        active: coupons.filter(c => c.status === 'active' && (!c.expiryDate || new Date(c.expiryDate) >= new Date())).length,
+        paused: coupons.filter(c => c.status === 'paused' && (!c.expiryDate || new Date(c.expiryDate) >= new Date())).length,
+        expired: coupons.filter(c => c.expiryDate && new Date(c.expiryDate) < new Date()).length,
         used: coupons.reduce((sum, c) => sum + c.usageCount, 0)
     };
 
     const statCards = [
-        { label: 'Total Coupons', value: stats.total, icon: Tag, color: 'text-primary', bg: 'bg-primary/10', sub: 'Lifetime count' },
-        { label: 'Active Promotions', value: stats.active, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50', sub: 'Currently live' },
-        { label: 'Total Redemptions', value: stats.used, icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-50', sub: 'Usage analytics' }
+        { id: 'all', label: 'Total Coupons', value: stats.total, icon: Tag, color: 'text-primary', bg: 'bg-primary/10', sub: 'Global count' },
+        { id: 'active', label: 'Live Deals', value: stats.active, icon: CheckCircle2, color: 'text-accent', bg: 'bg-accent/10', sub: 'Ready for use' },
+        { id: 'paused', label: 'Paused', value: stats.paused, icon: Pause, color: 'text-amber-500', bg: 'bg-amber-50', sub: 'Inactive now' },
+        { id: 'expired', label: 'Expired', value: stats.expired, icon: Clock, color: 'text-rose-500', bg: 'bg-rose-50', sub: 'Promotion ended' },
+        { id: 'used', label: 'Total Usage', value: stats.used, icon: Users, color: 'text-secondary', bg: 'bg-secondary/10', sub: 'Platform usage' }
     ];
 
     return (
@@ -235,7 +248,7 @@ const Coupons = () => {
                 </div>
                 <button 
                     onClick={() => setIsCreateOpen(true)}
-                    className="h-14 px-8 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-black transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-slate-200"
+                    className="h-14 px-8 bg-primary text-white rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-primary/20"
                 >
                     <Plus size={20} />
                     Create New Coupon
@@ -243,15 +256,28 @@ const Coupons = () => {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
                 {statCards.map((stat, i) => (
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1 }}
                         key={stat.label} 
-                        className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col gap-4 relative overflow-hidden group"
+                        onClick={() => setActiveCardFilter(activeCardFilter === stat.id ? 'all' : stat.id)}
+                        className={`p-8 rounded-2xl border transition-all cursor-pointer flex flex-col gap-4 relative overflow-hidden group shadow-sm hover:shadow-md ${
+                            activeCardFilter === stat.id 
+                            ? 'bg-white border-primary/20 ring-4 ring-primary/5' 
+                            : 'bg-white border-slate-100 hover:border-slate-200'
+                        }`}
                     >
+                        {activeCardFilter === stat.id && (
+                            <motion.div 
+                                layoutId="active-card-indicator"
+                                className="absolute top-0 right-0 w-16 h-16 bg-primary/10 rounded-bl-full flex items-center justify-center pl-4 pb-4"
+                            >
+                                <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_rgba(0,108,250,0.5)]" />
+                            </motion.div>
+                        )}
                         <div className="flex justify-between items-start">
                             <div className={`${stat.bg} p-3 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner-sm inner-shadow`}>
                                 <stat.icon size={28} className={stat.color} />
@@ -282,7 +308,7 @@ const Coupons = () => {
                             <input 
                                 type="text" 
                                 placeholder="Search by code or description..."
-                                className="w-full h-14 bg-white border border-slate-100 rounded-2xl pl-12 pr-6 font-bold text-sm text-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all shadow-inner-sm"
+                                className="w-full h-14 bg-white border border-slate-100 rounded-2xl pl-12 pr-6 font-bold text-sm text-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all shadow-inner"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
@@ -337,7 +363,7 @@ const Coupons = () => {
                                         </td>
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-inner-sm inner-shadow flex-shrink-0">
+                                                <div className="w-10 h-10 rounded-xl bg-accent/5 text-accent flex items-center justify-center shadow-inner-sm inner-shadow flex-shrink-0">
                                                     {coupon.discountType === 'percentage' ? <Percent size={18} /> : <IndianRupee size={18} />}
                                                 </div>
                                                 <span className="text-sm font-black text-slate-700">
@@ -381,9 +407,9 @@ const Coupons = () => {
                                                     }
                                                     if (coupon.status === 'active') {
                                                         return (
-                                                            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-emerald-50 border border-emerald-100 shadow-sm shadow-emerald-100/50">
-                                                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                                                                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.15em]">Live</span>
+                                                            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-accent/5 border border-accent/10 shadow-sm shadow-accent/5">
+                                                                <div className="w-2.5 h-2.5 rounded-full bg-accent shadow-[0_0_10px_rgba(5,196,254,0.5)]" />
+                                                                <span className="text-[10px] font-black text-accent uppercase tracking-[0.15em]">Live</span>
                                                             </div>
                                                         );
                                                     }
@@ -450,10 +476,10 @@ const Coupons = () => {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden border border-slate-100"
+                            className="bg-white w-full max-w-md rounded-2xl shadow-2xl relative z-10 overflow-hidden border border-slate-100"
                         >
                             <div className="p-10 text-center">
-                                <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-inner-sm animate-pulse-slow">
+                                <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner-sm animate-pulse-slow">
                                     <AlertTriangle size={40} />
                                 </div>
                                 <h3 className="text-xl font-black text-slate-900 leading-tight">Wait, are you sure?</h3>

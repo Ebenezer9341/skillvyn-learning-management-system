@@ -73,7 +73,7 @@ const couponSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['active', 'paused', 'expired'],
+        enum: ['active', 'paused', 'expired', 'exhausted'],
         default: 'active'
     }
 }, {

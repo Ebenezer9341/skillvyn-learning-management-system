@@ -9,18 +9,43 @@ import {
     Filter,
     Star,
     Clock,
-    Shield,
-    BarChart2,
     Eye,
     Plus,
+    Shield,
     LayoutDashboard,
     Loader2,
     AlertCircle,
     ChevronRight,
     Edit3,
     MoreVertical,
-    MessageSquare
+    MessageSquare,
+    TrendingUp,
+    Activity,
+    BarChart2
 } from 'lucide-react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip as ChartTooltip,
+  Filler,
+  Legend,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  ChartTooltip,
+  Filler,
+  Legend
+);
 import api from '../../services/api';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -112,7 +137,7 @@ const CourseRowActions = ({ course, mode, currentUser }) => {
                             >
                                 <button
                                     onClick={() => handleAction('/course/analytics')}
-                                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-all duration-200"
+                                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-slate-600 hover:bg-primary/5 hover:text-primary rounded-2xl transition-all duration-200"
                                 >
                                     <BarChart2 size={14} className="opacity-70" />
                                     <span className="text-[10px] font-black uppercase tracking-widest">View Analytics</span>
@@ -122,8 +147,8 @@ const CourseRowActions = ({ course, mode, currentUser }) => {
 
                                 <button
                                     onClick={() => handleAction('/course', !canEdit)}
-                                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-200 ${
-                                        canEdit ? 'text-slate-600 hover:bg-slate-50' : 'text-slate-300 cursor-not-allowed'
+                                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-2xl transition-all duration-200 ${
+                                        canEdit ? 'text-slate-600 hover:bg-primary/5 hover:text-primary' : 'text-slate-300 cursor-not-allowed'
                                     }`}
                                 >
                                     <Edit3 size={14} className="opacity-70" />
@@ -136,7 +161,7 @@ const CourseRowActions = ({ course, mode, currentUser }) => {
 
                                 <button
                                     onClick={() => handleAction('/course/forum')}
-                                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-xl transition-all duration-200"
+                                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-slate-600 hover:bg-primary/5 hover:text-primary rounded-2xl transition-all duration-200"
                                 >
                                     <MessageSquare size={14} className="opacity-70" />
                                     <span className="text-[10px] font-black uppercase tracking-widest">Course Forum</span>
@@ -170,6 +195,25 @@ const Courses = ({
     
     const navigate = useNavigate();
 
+    // Analytics State
+    const [stats, setStats] = useState({ totalCourses: 0, activeCourses: 0, draftCourses: 0, totalEnrollments: 0, growth: [], dailyGrowth: [] });
+    const [statsLoading, setStatsLoading] = useState(true);
+    const [statsView, setStatsView] = useState('month'); // 'month' or 'day'
+    const [activeStatsFilter, setActiveStatsFilter] = useState('All');
+
+    const fetchStats = async (status = 'All') => {
+        setStatsLoading(true);
+        setActiveStatsFilter(status);
+        try {
+            const response = await api.get(`/api/courses/stats?status=${status}`);
+            setStats(response.data.data);
+        } catch (err) {
+            console.error('Error fetching course stats:', err);
+        } finally {
+            setStatsLoading(false);
+        }
+    };
+
     const fetchCourses = async () => {
         setLoading(true);
         setError(null);
@@ -187,6 +231,7 @@ const Courses = ({
 
     useEffect(() => {
         fetchCourses();
+        fetchStats();
     }, [mode]);
 
 
@@ -206,73 +251,101 @@ const Courses = ({
         return matchesSearch && matchesCategory && matchesStatus && matchesLevel;
     });
 
-    const stats = mode === 'mentor' ? [
+    const statCards = mode === 'mentor' ? [
         {
             label: 'Total Courses',
-            value: courses.length.toString(),
+            value: stats.totalCourses,
             icon: BookOpen,
-            colorClass: 'text-blue-600',
-            bgClass: 'bg-blue-50',
             change: 'Lifetime uploads'
         },
         {
             label: 'Active Courses',
-            value: courses.filter(c => c.status === 'published').length.toString(),
+            value: stats.activeCourses,
             icon: CheckCircle,
-            colorClass: 'text-emerald-600',
-            bgClass: 'bg-emerald-50',
             change: 'Live on platform'
         },
         {
             label: 'Total Students',
-            value: courses.reduce((acc, curr) => acc + (curr.enrollmentCount || 0), 0).toLocaleString(),
+            value: stats.totalEnrollments,
             icon: Users,
-            colorClass: 'text-purple-600',
-            bgClass: 'bg-purple-50',
             change: 'Across all items'
         },
         {
-            label: 'Average Rating',
-            value: (courses.reduce((acc, curr) => acc + (curr.averageRating || 0), 0) / (courses.length || 1)).toFixed(1),
-            icon: Star,
-            colorClass: 'text-amber-600',
-            bgClass: 'bg-amber-50',
-            change: 'Learner feedback'
+            label: 'Draft Projects',
+            value: stats.draftCourses,
+            icon: Clock,
+            change: 'In development'
         }
     ] : [
         {
             label: 'Platform Courses',
-            value: courses.length.toString(),
+            value: stats.totalCourses,
             icon: BookOpen,
-            colorClass: 'text-blue-600',
-            bgClass: 'bg-blue-50',
             change: 'Global catalog'
         },
         {
             label: 'Live Content',
-            value: courses.filter(c => c.status === 'published').length.toString(),
+            value: stats.activeCourses,
             icon: CheckCircle,
-            colorClass: 'text-emerald-600',
-            bgClass: 'bg-emerald-50',
             change: 'Active & searchable'
         },
         {
             label: 'Draft Projects',
-            value: courses.filter(c => c.status === 'draft').length.toString(),
+            value: stats.draftCourses,
             icon: Clock,
-            colorClass: 'text-amber-600',
-            bgClass: 'bg-amber-50',
             change: 'Pending completion'
-        },
-        {
-            label: 'Archived',
-            value: courses.filter(c => c.status === 'archived').length.toString(),
-            icon: Shield,
-            colorClass: 'text-slate-600',
-            bgClass: 'bg-slate-100',
-            change: 'Soft-deleted items'
         }
     ];
+
+    const chartData = {
+        labels: statsView === 'month' 
+            ? (stats.growth?.map(g => g.label) || ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan'])
+            : (stats.dailyGrowth?.map(g => g.label) || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']),
+        datasets: [
+            {
+                label: statsView === 'month' ? 'Growth Trend' : 'Daily Activity',
+                data: statsView === 'month' 
+                    ? (stats.growth?.map(g => g.count) || [0, 0, 0, 0, 0, 0])
+                    : (stats.dailyGrowth?.map(g => g.count) || [0, 0, 0, 0, 0, 0, 0]),
+                borderColor: '#05C4FE',
+                backgroundColor: 'rgba(5, 196, 254, 0.15)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#006CFA',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+            }
+        ]
+    };
+
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: '#001988',
+                titleColor: '#fff',
+                bodyColor: '#A8EBFF',
+                padding: 12,
+                displayColors: false,
+                callbacks: { label: (context) => `${context.parsed.y} Courses` }
+            }
+        },
+        scales: {
+            x: {
+                grid: { display: false, drawBorder: false },
+                ticks: { color: '#64748b', font: { size: 10, family: 'Inter, sans-serif' } }
+            },
+            y: {
+                grid: { color: '#f1f5f9', drawBorder: false, borderDash: [5, 5] },
+                ticks: { color: '#64748b', font: { size: 10, family: 'Inter, sans-serif' }, maxTicksLimit: 5 }
+            }
+        }
+    };
 
     if (error) {
         return (
@@ -282,7 +355,7 @@ const Courses = ({
                 <p className="text-slate-500 mb-6">{error}</p>
                 <button 
                     onClick={fetchCourses}
-                    className="px-6 py-2 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all font-black uppercase tracking-widest text-[10px]"
+                    className="px-6 py-2 bg-primary text-white font-bold rounded-2xl hover:bg-primary/90 transition-all font-black uppercase tracking-widest text-[10px]"
                 >
                     Retry Connection
                 </button>
@@ -303,13 +376,22 @@ const Courses = ({
                 </div>
                 <div className="flex items-center gap-3">
                     {mode !== 'mentor' && (
-                        <button 
-                            onClick={() => navigate(`/${currentUser.role}/analytics/platform`)}
-                            className="flex items-center justify-center gap-2 bg-white border border-slate-100 hover:bg-slate-50 text-slate-900 px-6 py-3 rounded-2xl transition-all font-black uppercase tracking-widest text-[10px] shadow-xl shadow-slate-200/50 hover:scale-105 active:scale-95 group"
-                        >
-                            <LayoutDashboard size={18} className="text-primary group-hover:rotate-12 transition-transform" />
-                            <span>Platform Insights</span>
-                        </button>
+                        <>
+                            <button 
+                                onClick={() => navigate(`/${currentUser.role}/courses/approvals`)}
+                                className="flex items-center justify-center gap-2 bg-white border border-slate-100 hover:bg-slate-50 text-slate-900 px-6 py-3 rounded-2xl transition-all font-black uppercase tracking-widest text-[10px] shadow-xl shadow-slate-200/50 hover:scale-105 active:scale-95 group"
+                            >
+                                <Shield size={18} className="text-secondary group-hover:rotate-12 transition-transform" />
+                                <span>Course Approvals</span>
+                            </button>
+                            <button 
+                                onClick={() => navigate(`/${currentUser.role}/analytics/platform`)}
+                                className="flex items-center justify-center gap-2 bg-white border border-slate-100 hover:bg-slate-50 text-slate-900 px-6 py-3 rounded-2xl transition-all font-black uppercase tracking-widest text-[10px] shadow-xl shadow-slate-200/50 hover:scale-105 active:scale-95 group"
+                            >
+                                <LayoutDashboard size={18} className="text-primary group-hover:rotate-12 transition-transform" />
+                                <span>Platform Insights</span>
+                            </button>
+                        </>
                     )}
                     <button 
                         onClick={() => setIsCreateModalOpen(true)}
@@ -321,41 +403,124 @@ const Courses = ({
                 </div>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8 text-sans">
-                {stats.map((stat, idx) => (
-                    <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.1 }}
-                        className="bg-white p-6 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 hover:scale-[1.02] transition-all relative overflow-hidden group"
-                    >
-                        {loading && (
-                            <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center z-10">
-                                <Loader2 size={18} className="text-primary animate-spin" />
+            {/* Analytics Block */}
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                style={{ fontFamily: 'Graphik, sans-serif' }}
+                className="bg-white rounded-2xl p-8 md:p-12 mb-8 relative overflow-hidden shadow-sm text-slate-800 border border-slate-100"
+            >
+                {/* Abstract gradients strictly using brand colors - subtler for light mode */}
+                <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full blur-[140px] -translate-y-1/2 translate-x-1/3 pointer-events-none" style={{ backgroundColor: '#05C4FE', opacity: 0.05 }} />
+                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] rounded-full blur-[120px] translate-y-1/3 -translate-x-1/4 pointer-events-none" style={{ backgroundColor: '#006CFA', opacity: 0.08 }} />
+                
+                <div className="relative z-10">
+                    <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8" style={{ borderBottomColor: '#f1f5f9', borderBottomWidth: '1px' }}>
+                        <div>
+                            <h2 className="text-2xl md:text-3xl font-black text-secondary tracking-tight flex items-center gap-3">
+                                <TrendingUp size={28} className="text-primary" />
+                                Curriculum Analytics
+                            </h2>
+                            <p style={{ fontFamily: 'Inter, sans-serif' }} className="text-slate-500 font-medium mt-2 text-sm max-w-xl">
+                                Strategic curriculum overview analyzing content lifecycle, student engagement, and platform development velocity.
+                            </p>
+                        </div>
+                        {statsLoading && (
+                            <div className="flex items-center gap-2 px-4 py-2 rounded-2xl border" style={{ color: '#006CFA', backgroundColor: 'rgba(0,108,250,0.05)', borderColor: 'rgba(0,108,250,0.1)' }}>
+                                <Loader2 size={16} className="animate-spin" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">Processing</span>
                             </div>
                         )}
-                        <div className="flex justify-between items-start mb-4">
-                            <div className={`${stat.bgClass} p-3 rounded-2xl flex items-center justify-center shadow-inner inner-shadow`}>
-                                <stat.icon size={24} className={stat.colorClass} />
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
+                        {/* Stats left column */}
+                        <div className="lg:col-span-1 flex flex-col justify-between gap-6 md:gap-8 min-h-[300px]">
+                            {statCards.map((stat, idx) => (
+                                <motion.div 
+                                    key={idx} 
+                                    onClick={() => {
+                                        let newStatus = 'All';
+                                        if (stat.label.toLowerCase().includes('active') || stat.label.toLowerCase().includes('live')) {
+                                            newStatus = 'published';
+                                            setFilterStatus('published');
+                                            setShowFilters(true);
+                                        } else if (stat.label.toLowerCase().includes('draft')) {
+                                            newStatus = 'draft';
+                                            setFilterStatus('draft');
+                                            setShowFilters(true);
+                                        } else if (stat.label.toLowerCase().includes('total') || stat.label.toLowerCase().includes('platform')) {
+                                            newStatus = 'All';
+                                            setFilterStatus('All');
+                                        }
+                                        fetchStats(newStatus);
+                                    }}
+                                    className={`relative group p-5 rounded-2xl transition-all border cursor-pointer flex-1 flex flex-col justify-center ${
+                                        ((stat.label.toLowerCase().includes('active') || stat.label.toLowerCase().includes('live')) && activeStatsFilter === 'published') ||
+                                        (stat.label.toLowerCase().includes('draft') && activeStatsFilter === 'draft') ||
+                                        ((stat.label.toLowerCase().includes('total') || stat.label.toLowerCase().includes('platform')) && activeStatsFilter === 'All')
+                                        ? 'bg-primary/5 border-primary/20 ring-1 ring-primary/10'
+                                        : 'hover:bg-slate-50 border-transparent hover:border-slate-100'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-4 mb-3">
+                                        <div className="w-10 h-10 rounded-2xl flex items-center justify-center border shadow-sm bg-white border-slate-100">
+                                            <stat.icon size={18} className="text-primary" />
+                                        </div>
+                                        <h3 style={{ fontFamily: 'Inter, sans-serif' }} className="text-[10px] font-black uppercase tracking-[0.2em] leading-tight text-slate-400 flex-1">
+                                            {stat.label}
+                                        </h3>
+                                    </div>
+                                    <div className="flex items-baseline gap-3">
+                                        <div className="text-4xl lg:text-5xl font-black tracking-tighter text-secondary ml-1">
+                                            {statsLoading ? '-' : stat.value}
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 inline-flex items-center gap-2 ml-1">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                        <span style={{ fontFamily: 'Inter, sans-serif' }} className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400">
+                                            {stat.change}
+                                        </span>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+
+                        {/* Chart right column */}
+                        <div className="lg:col-span-2 min-h-[300px] w-full border rounded-2xl p-6 relative flex flex-col bg-slate-50/50 border-slate-100">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 style={{ fontFamily: 'Inter, sans-serif' }} className="text-secondary text-sm font-bold flex items-center gap-2">
+                                    <Activity size={16} className="text-primary" /> Velocity Trend
+                                </h3>
+                                <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+                                    <button 
+                                        onClick={() => setStatsView('month')}
+                                        className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${statsView === 'month' ? 'bg-primary text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                                    >
+                                        Month
+                                    </button>
+                                    <button 
+                                        onClick={() => setStatsView('day')}
+                                        className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${statsView === 'day' ? 'bg-primary text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                                    >
+                                        Day
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="flex-1 w-full h-full relative min-h-[250px]">
+                                <Line data={chartData} options={chartOptions} />
                             </div>
                         </div>
-                        <h3 className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">{stat.label}</h3>
-                        <div className="flex items-end gap-2 mt-1">
-                            <p className="text-2xl font-black text-slate-900">{stat.value}</p>
-                        </div>
-                        <p className="text-xs text-slate-400 font-bold mt-2 italic">{stat.change}</p>
-                    </motion.div>
-                ))}
-            </div>
+                    </div>
+                </div>
+            </motion.div>
 
             {/* Courses Table Section */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden text-sans">
                 <div className="p-8 border-b border-slate-50">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <h2 className="font-black text-slate-900 text-lg flex items-center gap-2">
-                             <div className="w-10 h-10 rounded-xl bg-primary/5 text-primary flex items-center justify-center inner-shadow">
+                             <div className="w-10 h-10 rounded-2xl bg-primary/5 text-primary flex items-center justify-center inner-shadow">
                                 <BookOpen size={20} />
                             </div>
                             {mode === 'mentor' ? 'My Curriculum List' : 'Platform Curriculum Portfolios'}
@@ -455,9 +620,9 @@ const Courses = ({
                              {loading ? (
                                 [...Array(5)].map((_, i) => (
                                     <tr key={i} className="animate-pulse">
-                                        <td className="px-8 py-7"><div className="h-10 w-64 bg-slate-100 rounded-xl"></div></td>
-                                        <td className="px-8 py-7"><div className="h-4 w-20 bg-slate-100 rounded"></div></td>
-                                        <td className="px-8 py-7"><div className="h-4 w-24 bg-slate-100 rounded"></div></td>
+                                        <td className="px-8 py-7"><div className="h-10 w-64 bg-slate-100 rounded-2xl"></div></td>
+                                        <td className="px-8 py-7"><div className="h-4 w-20 bg-slate-100 rounded-2xl"></div></td>
+                                        <td className="px-8 py-7"><div className="h-4 w-24 bg-slate-100 rounded-2xl"></div></td>
                                         <td className="px-8 py-7"><div className="h-6 w-24 bg-slate-100 rounded-full"></div></td>
                                         <td className="px-8 py-7"></td>
                                     </tr>
@@ -532,7 +697,7 @@ const Courses = ({
                                 <tr>
                                     <td colSpan="5" className="px-8 py-20 text-center">
                                         <div className="max-w-xs mx-auto text-slate-400">
-                                            <div className="w-20 h-20 bg-slate-50 rounded-[2.5rem] flex items-center justify-center border border-slate-100 text-slate-200 mx-auto mb-6">
+                                            <div className="w-20 h-20 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 text-slate-200 mx-auto mb-6">
                                                 <BookOpen size={40} strokeWidth={1.5} />
                                             </div>
                                             <p className="font-black text-sm uppercase tracking-widest">No matching modules discovered</p>
@@ -551,10 +716,10 @@ const Courses = ({
                     </p>
                     <div className="flex gap-4">
                         <button className="px-8 py-3 bg-white border border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-300 cursor-not-allowed shadow-xl shadow-slate-100 active:scale-95 transition-all">
-                            Prior Log
+                            Previous Page
                         </button>
                         <button className="px-8 py-3 bg-white border border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-white hover:shadow-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-slate-200/20">
-                            Next Record
+                            Next Page
                         </button>
                     </div>
                 </div>

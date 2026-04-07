@@ -1,7 +1,9 @@
 import ForumPost from "../models/ForumPost.model.js";
+import Enrollment from "../models/Enrollment.model.js";  // ← add this
 import AppError from "../utils/appError.js";
 import catchAsync from "../utils/catchAsync.js";
 import { logActivity } from "../utils/logger.js";
+
 
 // Fetch posts for a specific course with pagination and search
 export const getCoursePosts = catchAsync(async (req, res, next) => {
@@ -13,7 +15,7 @@ export const getCoursePosts = catchAsync(async (req, res, next) => {
 
     // Build the query object
     const query = { course: courseId };
-    
+
     // Add search logic if a search term exists
     if (search) {
         query.$or = [
@@ -39,7 +41,7 @@ export const getCoursePosts = catchAsync(async (req, res, next) => {
     res.status(200).json({
         status: "success",
         results: posts.length,
-        data: { 
+        data: {
             posts,
             pagination: {
                 currentPage: page,
@@ -54,6 +56,20 @@ export const getCoursePosts = catchAsync(async (req, res, next) => {
 // Create a new discussion topic
 export const createPost = catchAsync(async (req, res, next) => {
     const { courseId, title, content, tags } = req.body;
+
+    // Candidates must be enrolled in the course to post in its forum.
+    // Mentors, admins, and superusers can post freely (they moderate the forum).
+    if (req.user.role === 'candidate') {
+        const enrollment = await Enrollment.findOne({
+            candidate: req.user._id,
+            course: courseId,
+            status: 'active'
+        });
+
+        if (!enrollment) {
+            return next(new AppError('You must be enrolled in this course to post in its forum', 403));
+        }
+    }
 
     const newPost = await ForumPost.create({
         course: courseId,
@@ -142,9 +158,13 @@ export const deletePost = catchAsync(async (req, res, next) => {
         return next(new AppError("Post not found", 404));
     }
 
-    // Authorization: Owner of the post, Admin, or Superuser
+    // Authorization: Owner of the post, Admin, Superuser, or Mentor
+    if (req.user.role === 'candidate' && post.author.toString() !== req.user._id.toString()) {
+        return next(new AppError('Not authorized to delete this post', 403));
+    }
+
     const isOwner = post.author.toString() === req.user._id.toString();
-    const isModerator = ['admin', 'superuser'].includes(req.user.role);
+    const isModerator = ['admin', 'superuser', 'mentor'].includes(req.user.role);
 
     if (!isOwner && !isModerator) {
         return next(new AppError("You don't have permission to delete this post", 403));
@@ -157,9 +177,9 @@ export const deletePost = catchAsync(async (req, res, next) => {
         action: "DELETE",
         resource: "FORUM",
         resourceId: postId,
-        details: { 
-            title: post.title, 
-            deletionType: isModerator ? "MODERATOR_FORCED" : "USER_INITIATED" 
+        details: {
+            title: post.title,
+            deletionType: isModerator ? "MODERATOR_FORCED" : "USER_INITIATED"
         }
     }, req);
 
@@ -216,8 +236,8 @@ export const deleteReply = catchAsync(async (req, res, next) => {
         action: "DELETE",
         resource: "FORUM",
         resourceId: postId,
-        details: { 
-            replyId, 
+        details: {
+            replyId,
             replyContentSample: reply.content.substring(0, 50),
             deletionType: isModerator ? "MODERATOR_REMOVAL" : "USER_REMOVAL"
         }

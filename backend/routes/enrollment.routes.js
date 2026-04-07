@@ -6,7 +6,9 @@ import {
     enrollBatchValidation, 
     enrollBundleValidation, 
     rateCourseValidation, 
-    progressUpdateValidation 
+    progressUpdateValidation,
+    submitExamValidation,
+    submitProjectValidation
 } from '../validators/enrollment.validator.js';
 import { validate } from '../middlewares/validate.middleware.js';
 
@@ -100,12 +102,16 @@ router.patch(
 router.post(
     '/submit-exam',
     restrictTo('candidate'),
+    submitExamValidation,
+    validate,
     enrollmentController.submitCertificationExam
 );
 
 router.post(
     '/submit-project',
     restrictTo('candidate'),
+    submitProjectValidation,
+    validate,
     enrollmentController.submitCapstoneProject
 );
 

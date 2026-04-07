@@ -6,7 +6,8 @@ import {
     getManageBundles,
     getBundle, 
     updateBundle, 
-    deleteBundle 
+    deleteBundle,
+    getBundleStats
 } from "../controllers/bundle.controller.js";
 import { protect, restrictTo } from "../middlewares/auth.middleware.js";
 import { bundleValidation } from "../validators/bundle.validator.js";
@@ -25,6 +26,12 @@ router.get(
     "/my-bundles",
     restrictTo("superuser", "admin", "mentor"),
     getMentorBundles
+);
+
+router.get(
+    "/stats",
+    restrictTo("superuser", "admin", "mentor"),
+    getBundleStats
 );
 
 // Get all bundles for management

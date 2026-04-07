@@ -98,7 +98,7 @@ const courseSchema = new mongoose.Schema({
     ],
     status: {
         type: String,
-        enum: ["draft", "published", "archived"],
+        enum: ["draft", "published", "archived", "pending"],
         default: "draft"
     },
     enrollmentCount: {
@@ -121,6 +121,8 @@ const courseSchema = new mongoose.Schema({
         mcqEnabled: { type: Boolean, default: false },
         projectEnabled: { type: Boolean, default: false },
         mcqPassingScore: { type: Number, default: 70 },
+        mcqMaxAttempts: { type: Number, default: 3 },
+        mcqCooldownHours: { type: Number, default: 24 },
         projectDescription: String,
         projectAsset: {
             url: String,
@@ -133,6 +135,16 @@ const courseSchema = new mongoose.Schema({
                 correctAnswer: { type: Number, required: true }
             }
         ]
+    },
+    approvalRequest: {
+        requestedStatus: { 
+            type: String, 
+            enum: ["draft", "published", "archived"] 
+        },
+        mentorRemark: { type: String, trim: true },
+        adminRemark: { type: String, trim: true },
+        requestedAt: { type: Date },
+        processedAt: { type: Date }
     }
 }, { 
     timestamps: true,

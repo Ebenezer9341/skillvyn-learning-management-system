@@ -1,5 +1,8 @@
+import mongoose from "mongoose";
 import Bundle from "../models/Bundle.model.js";
 import Course from "../models/Course.model.js";
+import Transaction from "../models/Transaction.model.js";
+import AuditLog from "../models/AuditLog.model.js";
 import catchAsync from "../utils/catchAsync.js";
 import AppError from "../utils/appError.js";
 import httpStatus from "../utils/httpStatus.js";
@@ -333,5 +336,169 @@ export const deleteBundle = catchAsync(async (req, res, next) => {
     res.status(httpStatus.SUCCESS).json({
         status: 'success',
         message: bundle.enrollmentCount > 0 ? "Bundle archived successfully" : "Bundle deleted successfully"
+    });
+});
+
+/**
+ * @desc Get global metrics for bundles (Admin/Superuser/Mentor)
+ */
+export const getBundleStats = catchAsync(async (req, res, next) => {
+    const isMentor = req.user.role === 'mentor';
+    const { status } = req.query; // New status filter for deep-drill
+    const baseQuery = isMentor ? { instructor: req.user._id } : {};
+    
+    const totalBundles = await Bundle.countDocuments(baseQuery);
+    const activeBundles = await Bundle.countDocuments({ ...baseQuery, status: 'published' });
+    const draftBundles = await Bundle.countDocuments({ ...baseQuery, status: 'draft' });
+    
+    // Aggregating enrollments from bundles
+    const result = await Bundle.aggregate([
+        { $match: baseQuery },
+        { $group: { _id: null, totalEnrollments: { $sum: "$enrollmentCount" } } }
+    ]);
+    const totalEnrollments = result.length > 0 ? result[0].totalEnrollments : 0;
+
+    // Growth trends (last 6 months)
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+    sixMonthsAgo.setDate(1);
+    sixMonthsAgo.setHours(0, 0, 0, 0);
+
+    let growthData = [];
+    let dailyGrowthData = [];
+
+    if (status === 'purchased') {
+        // Use AuditLog for a unified view of ALL enrollments (Free + Paid)
+        const logQuery = { 
+            action: 'ENROLL',
+            resource: 'BUNDLE',
+            createdAt: { $gte: sixMonthsAgo } 
+        };
+        
+        if (isMentor) {
+            // Find bundles belonging to mentor to filter logs
+            const mentorBundles = await Bundle.find({ instructor: req.user._id }).select('_id');
+            const bundleIdsStr = mentorBundles.map(b => b._id.toString());
+            logQuery.resourceId = { $in: bundleIdsStr };
+        }
+
+        growthData = await AuditLog.aggregate([
+            { $match: logQuery },
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$createdAt" },
+                        month: { $month: "$createdAt" }
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { "_id.year": 1, "_id.month": 1 } }
+        ]);
+
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+        sevenDaysAgo.setHours(0, 0, 0, 0);
+
+        const logDailyQuery = { ...logQuery, createdAt: { $gte: sevenDaysAgo } };
+
+        dailyGrowthData = await AuditLog.aggregate([
+            { $match: logDailyQuery },
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$createdAt" },
+                        month: { $month: "$createdAt" },
+                        day: { $dayOfMonth: "$createdAt" }
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 } }
+        ]);
+    } else {
+        // Standard BUNDLE creation analytics
+        const growthQuery = { ...baseQuery };
+        if (status && status !== 'All') {
+            growthQuery.status = status;
+        }
+
+        growthData = await Bundle.aggregate([
+            { 
+                $match: { 
+                    ...growthQuery,
+                    createdAt: { $gte: sixMonthsAgo } 
+                } 
+            },
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$createdAt" },
+                        month: { $month: "$createdAt" }
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { "_id.year": 1, "_id.month": 1 } }
+        ]);
+
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+        sevenDaysAgo.setHours(0, 0, 0, 0);
+
+        dailyGrowthData = await Bundle.aggregate([
+            { 
+                $match: { 
+                    ...growthQuery,
+                    createdAt: { $gte: sevenDaysAgo } 
+                } 
+            },
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$createdAt" },
+                        month: { $month: "$createdAt" },
+                        day: { $dayOfMonth: "$createdAt" }
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 } }
+        ]);
+    }
+
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const growth = [];
+    for (let i = 5; i >= 0; i--) {
+        const d = new Date();
+        d.setMonth(d.getMonth() - i);
+        const month = d.getMonth() + 1;
+        const year = d.getFullYear();
+        const monthPoint = growthData.find(g => g._id.month === month && g._id.year === year);
+        growth.push({ label: monthNames[month - 1], count: monthPoint ? monthPoint.count : 0 });
+    }
+
+    const dailyGrowth = [];
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const day = d.getDate();
+        const month = d.getMonth() + 1;
+        const year = d.getFullYear();
+        const dayPoint = dailyGrowthData.find(g => g._id.day === day && g._id.month === month && g._id.year === year);
+        dailyGrowth.push({ label: d.toLocaleDateString('en-US', { weekday: 'short' }), count: dayPoint ? dayPoint.count : 0 });
+    }
+
+    res.status(httpStatus.SUCCESS).json({
+        status: 'success',
+        data: {
+            totalBundles,
+            activeBundles,
+            draftBundles,
+            totalEnrollments,
+            growth,
+            dailyGrowth,
+            growthSource: status === 'purchased' ? 'enrollment' : 'content'
+        }
     });
 });

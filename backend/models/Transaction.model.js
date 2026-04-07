@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import crypto from "crypto";
 import Counter from "./Counter.model.js";
 
 const transactionSchema = new mongoose.Schema({
@@ -93,7 +94,7 @@ transactionSchema.pre("save", async function() {
     }
     
     if (!this.paymentId) {
-        this.paymentId = `pay_${Math.random().toString(36).substr(2, 9)}`;
+        this.paymentId = `pay_${crypto.randomBytes(8).toString('hex')}`;
     }
 });
 

@@ -165,7 +165,7 @@ const CandidatePurchases = () => {
                                             <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                                                 <Calendar size={12} /> {new Date(tx.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                                             </span>
-                                            <span className="flex items-center gap-1.5 text-[10px] font-black text-emerald-500 uppercase tracking-widest">
+                                            <span className="flex items-center gap-1.5 text-[10px] font-black text-accent uppercase tracking-widest">
                                                 <CheckCircle2 size={12} /> Paid
                                             </span>
                                         </div>
@@ -254,7 +254,7 @@ const CandidatePurchases = () => {
                                         <span style={{ fontSize: '24px' }}>₹</span>{selectedTx.amount?.toLocaleString()}
                                     </div>
                                 </div>
-                                <div style={{ background: '#ecfdf5', color: '#059669', padding: '10px 20px', borderRadius: '100px', fontSize: '12px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '2px', border: '1px solid #d1fae5' }}>
+                                <div style={{ background: '#f0f9ff', color: '#006CFA', padding: '10px 20px', borderRadius: '100px', fontSize: '12px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '2px', border: '1px solid #e0f2fe' }}>
                                     ✓ Payment Successful
                                 </div>
                             </div>

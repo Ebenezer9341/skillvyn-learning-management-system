@@ -84,7 +84,7 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess, requesterRole }) => {
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="relative w-full max-w-lg bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-white"
+                        className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden border border-white"
                     >
                         {/* Header */}
                         <div className="p-8 pb-4 flex justify-between items-start">
@@ -117,7 +117,7 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess, requesterRole }) => {
                                             required
                                             type="text"
                                             placeholder="John"
-                                            className="w-full bg-slate-50 border border-slate-100 py-3 pl-11 pr-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                            className="w-full bg-slate-50 border border-slate-100 py-3 pl-11 pr-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                             value={formData.firstName}
                                             onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                                         />
@@ -131,7 +131,7 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess, requesterRole }) => {
                                             required
                                             type="text"
                                             placeholder="Doe"
-                                            className="w-full bg-slate-50 border border-slate-100 py-3 pl-11 pr-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                            className="w-full bg-slate-50 border border-slate-100 py-3 pl-11 pr-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                             value={formData.lastName}
                                             onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                                         />
@@ -147,7 +147,7 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess, requesterRole }) => {
                                         required
                                         type="email"
                                         placeholder="john@example.com"
-                                        className="w-full bg-slate-50 border border-slate-100 py-3 pl-11 pr-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        className="w-full bg-slate-50 border border-slate-100 py-3 pl-11 pr-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                         value={formData.email}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     />
@@ -161,7 +161,7 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess, requesterRole }) => {
                                     <input
                                         required
                                         type="date"
-                                        className="w-full bg-slate-50 border border-slate-100 py-3 pl-11 pr-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm text-slate-600"
+                                        className="w-full bg-slate-50 border border-slate-100 py-3 pl-11 pr-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm text-slate-600"
                                         value={formData.dateOfBirth}
                                         onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
                                         max={new Date().toISOString().split("T")[0]}
@@ -177,7 +177,7 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess, requesterRole }) => {
                                             key={role}
                                             type="button"
                                             onClick={() => setFormData({ ...formData, role })}
-                                            className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all capitalize ${
+                                            className={`py-2.5 px-3 rounded-2xl border text-xs font-bold transition-all capitalize ${
                                                 formData.role === role 
                                                 ? 'bg-primary/10 border-primary text-primary shadow-sm' 
                                                 : 'bg-white border-slate-100 text-slate-500 hover:border-slate-200'
@@ -189,14 +189,14 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess, requesterRole }) => {
                                 </div>
                             </div>
 
-                            <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-3 flex items-start gap-2.5">
-                                <Shield size={16} className="text-blue-500 mt-0.5 flex-shrink-0" />
+                            <div className="bg-primary/5 border border-primary/10 rounded-2xl p-4 flex items-start gap-3">
+                                <Shield size={16} className="text-primary mt-0.5 flex-shrink-0" />
                                 <div>
-                                    <p className="text-xs font-bold text-blue-700">Auto-Generated Password</p>
-                                    <p className="text-[11px] text-blue-600/80 mt-0.5 leading-relaxed">
+                                    <p className="text-xs font-black text-primary uppercase tracking-widest">Auto-Generated Password</p>
+                                    <p className="text-[11px] text-slate-500 mt-1 leading-relaxed font-bold">
                                         {suggestedPassword ? (
-                                            <span className="flex items-center gap-1.5 flex-wrap">
-                                                User password: <span className="font-mono font-bold bg-blue-100/50 px-2 py-0.5 rounded border border-blue-200 text-blue-800">{suggestedPassword}</span>
+                                            <span className="flex items-center gap-2 flex-wrap">
+                                                User password: <span className="font-mono font-black bg-primary/10 px-2 py-0.5 rounded-lg border border-primary/20 text-primary">{suggestedPassword}</span>
                                             </span>
                                         ) : (
                                             <>For security, a password will be generated: <span className="font-bold">First Name + Year of Birth</span> (e.g., John1990).</>
@@ -209,14 +209,14 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess, requesterRole }) => {
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="flex-1 py-3 px-4 rounded-xl border border-slate-100 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all"
+                                    className="flex-1 py-3 px-4 rounded-2xl border border-slate-100 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isLoading}
-                                    className="flex-[2] py-3 px-4 rounded-xl bg-primary text-white font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+                                    className="flex-[2] py-3 px-4 rounded-2xl bg-primary text-white font-bold text-sm shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
                                 >
                                     {isLoading ? (
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

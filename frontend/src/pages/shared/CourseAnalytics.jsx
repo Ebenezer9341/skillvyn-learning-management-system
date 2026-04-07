@@ -433,7 +433,7 @@ const CourseAnalytics = () => {
     if (error) {
         return (
             <div className="min-h-screen bg-slate-50 p-8 flex items-center justify-center">
-                <div className="bg-white p-12 rounded-[2.5rem] border border-slate-100 shadow-2xl text-center max-w-lg">
+                <div className="bg-white p-12 rounded-2xl border border-slate-100 shadow-2xl text-center max-w-lg">
                     <Shield className="mx-auto text-rose-500 mb-6" size={64} />
                     <h2 className="text-2xl font-black text-slate-800 mb-2 uppercase tracking-tight">Access Restricted</h2>
                     <p className="text-slate-500 font-bold mb-8">{error}</p>
@@ -441,7 +441,7 @@ const CourseAnalytics = () => {
                         onClick={() => navigate(-1)}
                         className="px-8 py-3 bg-primary text-white font-black rounded-2xl hover:bg-primary/90 transition-all uppercase tracking-widest text-xs"
                     >
-                        Return to Safety
+                        Return to Dashboard
                     </button>
                 </div>
             </div>
@@ -465,8 +465,8 @@ const CourseAnalytics = () => {
             data: allDates.length > 0
                 ? allDates.map(d => data.timeline.find(t => t._id === d)?.count ?? 0)
                 : [0],
-            borderColor: '#6366f1',
-            backgroundColor: 'rgba(99, 102, 241, 0.08)',
+            borderColor: '#006CFA',
+            backgroundColor: 'rgba(0, 108, 250, 0.08)',
             borderWidth: 3,
             tension: 0.4,
             fill: true,
@@ -480,8 +480,8 @@ const CourseAnalytics = () => {
             data: allDates.length > 0
                 ? allDates.map(d => data.revenueTimeline.find(r => r._id === d)?.revenue ?? 0)
                 : [0],
-            borderColor: '#10b981',
-            backgroundColor: 'rgba(16, 185, 129, 0.08)',
+            borderColor: '#05C4FE',
+            backgroundColor: 'rgba(5, 196, 254, 0.08)',
             borderWidth: 2,
             borderDash: [5, 4],
             tension: 0.4,
@@ -497,7 +497,7 @@ const CourseAnalytics = () => {
         labels: data.statusDistribution.map(s => s._id.toUpperCase()),
         datasets: [{
             data: data.statusDistribution.map(s => s.count),
-            backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#6366f1'],
+            backgroundColor: ['#05C4FE', '#f59e0b', '#ef4444', '#006CFA'],
             borderWidth: 0,
             hoverOffset: 10
         }]
@@ -627,7 +627,7 @@ const CourseAnalytics = () => {
                                                     value={customStart}
                                                     max={customEnd || toYMD(new Date())}
                                                     onChange={e => setCustomStart(e.target.value)}
-                                                    className="w-full mt-1 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                                    className="w-full mt-1 border border-slate-200 rounded-2xl px-3 py-1.5 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                                                 />
                                             </div>
                                             <div>
@@ -638,13 +638,13 @@ const CourseAnalytics = () => {
                                                     min={customStart || undefined}
                                                     max={toYMD(new Date())}
                                                     onChange={e => setCustomEnd(e.target.value)}
-                                                    className="w-full mt-1 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                                    className="w-full mt-1 border border-slate-200 rounded-2xl px-3 py-1.5 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                                                 />
                                             </div>
                                         </div>
                                         <button
                                             onClick={applyCustom}
-                                            className="w-full py-2 bg-primary text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary/90 transition-all active:scale-95"
+                                            className="w-full py-2 bg-primary text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-primary/90 transition-all active:scale-95"
                                         >
                                             Apply Range
                                         </button>
@@ -658,7 +658,7 @@ const CourseAnalytics = () => {
                     <button
                         onClick={handleExportPDF}
                         disabled={isExporting}
-                        className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-black transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                         <Download size={16} className={isExporting ? 'animate-bounce' : ''} />
                         {isExporting ? 'Exporting...' : 'Export Report'}
@@ -669,16 +669,16 @@ const CourseAnalytics = () => {
             {/* Top Metrics */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-10 mt-6">
                 {[
-                    { label: 'Total Students',  value: data.stats.totalStudents,                    icon: Users,        color: 'text-blue-500',    bg: 'bg-blue-50' },
-                    { label: 'Avg Progress',    value: `${Math.round(data.stats.avgProgress)}%`,    icon: TrendingUp,   color: 'text-emerald-500', bg: 'bg-emerald-50' },
-                    { label: 'Success Rate',    value: `${Math.round(data.stats.completionRate)}%`, icon: Award,        color: 'text-purple-500',  bg: 'bg-purple-50' },
+                    { label: 'Total Students',  value: data.stats.totalStudents,                    icon: Users,        color: 'text-primary',    bg: 'bg-primary/10' },
+                    { label: 'Avg Progress',    value: `${Math.round(data.stats.avgProgress)}%`,    icon: TrendingUp,   color: 'text-accent',     bg: 'bg-accent/10' },
+                    { label: 'Success Rate',    value: `${Math.round(data.stats.completionRate)}%`, icon: Award,        color: 'text-secondary',  bg: 'bg-secondary/10' },
                     { label: 'Platform Rating', value: data.stats.avgRating,                        icon: Star,         color: 'text-amber-500',   bg: 'bg-amber-50' },
                     {
                         label: isFree ? 'Course Type' : 'Total Revenue',
                         value: isFree ? 'Free' : fmtINR(data.stats.totalRevenue),
                         icon: IndianRupee,
-                        color: isFree ? 'text-slate-400' : 'text-emerald-600',
-                        bg: isFree ? 'bg-slate-100' : 'bg-emerald-50'
+                        color: isFree ? 'text-slate-400' : 'text-accent',
+                        bg: isFree ? 'bg-slate-100' : 'bg-accent/10'
                     },
                 ].map((stat, i) => (
                     <motion.div
@@ -708,10 +708,10 @@ const CourseAnalytics = () => {
                         ...data.paymentStatusBreakdown.map(p => ({
                             label: `${p._id.charAt(0).toUpperCase() + p._id.slice(1)} Payments`,
                             value: p.count,
-                            accent: p._id === 'success' ? 'text-emerald-600' : p._id === 'failed' ? 'text-rose-500' : 'text-amber-500'
+                            accent: p._id === 'success' ? 'text-accent' : p._id === 'failed' ? 'text-rose-500' : 'text-amber-500'
                         }))
                     ].map((item, i) => (
-                        <div key={i} className="bg-white px-6 py-4 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between">
+                        <div key={i} className="bg-white px-6 py-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
                             <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{item.label}</span>
                             <span className={`text-lg font-black ${item.accent || 'text-slate-900'}`}>{item.value}</span>
                         </div>
@@ -734,7 +734,7 @@ const CourseAnalytics = () => {
                             </div>
                             {!isFree && (
                                 <div className="flex items-center gap-1.5">
-                                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                                    <div className="w-2.5 h-2.5 rounded-full bg-accent"></div>
                                     <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Revenue</span>
                                 </div>
                             )}
@@ -759,7 +759,7 @@ const CourseAnalytics = () => {
                             {data.statusDistribution.map((s, i) => (
                                 <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
                                     <div className="flex items-center gap-2">
-                                        <div className={`w-2 h-2 rounded-full ${['bg-emerald-500','bg-amber-500','bg-rose-500','bg-primary'][i % 4]}`}></div>
+                                        <div className={`w-2 h-2 rounded-full ${['bg-accent','bg-amber-500','bg-rose-500','bg-primary'][i % 4]}`}></div>
                                         <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">{s._id}</span>
                                     </div>
                                     <span className="text-xs font-black text-slate-900">{s.count}</span>

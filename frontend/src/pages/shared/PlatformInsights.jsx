@@ -86,7 +86,7 @@ const PlatformInsights = () => {
             let y = 0;
 
             // Header banner
-            doc.setFillColor(15, 23, 42); // slate-900
+            doc.setFillColor(0, 25, 136); // brand secondary (#001988)
             doc.rect(0, 0, pageW, 45, 'F');
             doc.setTextColor(255, 255, 255);
             doc.setFont('helvetica', 'bold');
@@ -105,7 +105,7 @@ const PlatformInsights = () => {
             doc.setTextColor(30, 41, 59);
             doc.text('Key Platform Metrics', margin, y);
             y += 2;
-            doc.setDrawColor(99, 102, 241);
+            doc.setDrawColor(0, 108, 250); // brand primary (#006CFA)
             doc.setLineWidth(0.8);
             doc.line(margin, y, margin + 40, y);
             y += 10;
@@ -182,7 +182,7 @@ const PlatformInsights = () => {
                 
                 doc.setFillColor(241, 245, 249);
                 doc.roundedRect(margin + 40, y, (contentW - 60), 6, 2, 2, 'F');
-                doc.setFillColor(99, 102, 241);
+                doc.setFillColor(0, 108, 250); // brand primary
                 if (barW > 0) doc.roundedRect(margin + 40, y, barW, 6, 2, 2, 'F');
                 
                 doc.setTextColor(100, 116, 139);
@@ -239,13 +239,13 @@ const PlatformInsights = () => {
             {
                 label: 'Enrollment Growth',
                 data: data.timelines.enrollment.map(t => t.count),
-                borderColor: '#6366f1',
-                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                borderColor: '#006CFA',
+                backgroundColor: 'rgba(0, 108, 250, 0.1)',
                 fill: true,
                 tension: 0.4,
                 pointRadius: 4,
                 pointBackgroundColor: '#fff',
-                pointBorderColor: '#6366f1',
+                pointBorderColor: '#006CFA',
                 pointBorderWidth: 2
             }
         ]
@@ -256,7 +256,7 @@ const PlatformInsights = () => {
         datasets: [{
             data: data.categoryBreakdown.map(c => c.enrollments),
             backgroundColor: [
-                '#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4', '#475569'
+                '#006CFA', '#05C4FE', '#001988', '#0055C4', '#1E40AF', '#1e1b4b', '#475569'
             ],
             borderWidth: 0,
             hoverOffset: 20
@@ -270,7 +270,7 @@ const PlatformInsights = () => {
                 <div className="flex items-center gap-5">
                     <button
                         onClick={() => navigate(-1)}
-                        className="p-4 bg-white text-slate-400 rounded-3xl border border-slate-100 shadow-xl hover:text-primary transition-all active:scale-90"
+                        className="p-4 bg-white text-slate-400 rounded-2xl border border-slate-100 shadow-xl hover:text-primary transition-all active:scale-90"
                     >
                         <ArrowLeft size={20} />
                     </button>
@@ -294,7 +294,7 @@ const PlatformInsights = () => {
                     <button
                         onClick={handleExportPDF}
                         disabled={isExporting}
-                        className="flex-1 lg:flex-none flex items-center justify-center gap-3 px-8 py-4 bg-slate-900 text-white rounded-[2rem] text-xs font-black uppercase tracking-widest shadow-2xl hover:bg-black transition-all active:scale-95 disabled:opacity-50"
+                        className="flex-1 lg:flex-none flex items-center justify-center gap-3 px-8 py-4 bg-secondary text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-2xl hover:bg-black transition-all active:scale-95 disabled:opacity-50"
                     >
                         {isExporting ? <Loader2 className="animate-spin" size={18} /> : <Download size={18} />}
                         {isExporting ? 'Generating Analysis...' : 'Export Platform Report'}
@@ -305,9 +305,9 @@ const PlatformInsights = () => {
             {/* Global Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                 {[
-                    { label: 'Platform Revenue', value: `₹${data.overview.totalRevenue.toLocaleString()}`, icon: IndianRupee, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-                    { label: 'Global Students', value: data.overview.totalEnrollments.toLocaleString(), icon: Users, color: 'text-blue-500', bg: 'bg-blue-50' },
-                    { label: 'Active Modules', value: data.overview.totalCourses, icon: BookOpen, color: 'text-purple-500', bg: 'bg-purple-50' },
+                    { label: 'Platform Revenue', value: `₹${data.overview.totalRevenue.toLocaleString()}`, icon: IndianRupee, color: 'text-accent', bg: 'bg-accent/5' },
+                    { label: 'Global Students', value: data.overview.totalEnrollments.toLocaleString(), icon: Users, color: 'text-primary', bg: 'bg-primary/5' },
+                    { label: 'Active Modules', value: data.overview.totalCourses, icon: BookOpen, color: 'text-secondary', bg: 'bg-secondary/5' },
                     { label: 'Platform Rating', value: `${data.overview.avgRating} / 5`, icon: Star, color: 'text-amber-500', bg: 'bg-amber-50' },
                 ].map((stat, i) => (
                     <motion.div
@@ -427,7 +427,7 @@ const PlatformInsights = () => {
                                             </div>
                                         </div>
                                         <div>
-                                            <h4 className="font-black text-slate-900 tracking-tight leading-tight group-hover:text-emerald-600 transition-colors">{course.title}</h4>
+                                            <h4 className="font-black text-slate-900 tracking-tight leading-tight group-hover:text-accent transition-colors">{course.title}</h4>
                                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1.5">{course.category}</p>
                                         </div>
                                     </div>
@@ -436,7 +436,7 @@ const PlatformInsights = () => {
                                             <IndianRupee size={14} className="text-slate-400" />
                                             {course.revenue.toLocaleString()}
                                         </div>
-                                        <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mt-1.5">{course.salesCount} Pure Sales</p>
+                                        <p className="text-[10px] font-black text-accent uppercase tracking-widest mt-1.5">{course.salesCount} Pure Sales</p>
                                     </div>
                                 </motion.div>
                             ))}
@@ -497,7 +497,7 @@ const PlatformInsights = () => {
             </div>
 
             {/* Platform Health Badge */}
-            <div className="mt-12 p-8 bg-slate-900 rounded-[3rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden relative">
+            <div className="mt-12 p-8 bg-secondary rounded-2xl shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden relative">
                 <div className="relative z-10">
                     <h3 className="text-xl font-black text-white tracking-tight mb-2 uppercase tracking-widest">Platform Resilience Score: Optimal</h3>
                     <p className="text-slate-400 text-sm font-bold">All systems operating within performance thresholds. Global synchronization complete.</p>

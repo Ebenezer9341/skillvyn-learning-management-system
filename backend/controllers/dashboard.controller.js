@@ -62,12 +62,18 @@ export const getSuperuserStats = catchAsync(async (req, res, next) => {
     const [
         totalUsers,
         totalCourses,
+        draftCourses,
+        publishedCourses,
+        archivedCourses,
         totalMentors,
         totalCandidates,
         recentActivity
     ] = await Promise.all([
         User.countDocuments(),
         Course.countDocuments(),
+        Course.countDocuments({ status: 'draft' }),
+        Course.countDocuments({ status: 'published' }),
+        Course.countDocuments({ status: 'archived' }),
         User.countDocuments({ role: 'mentor' }),
         User.countDocuments({ role: 'candidate' }),
         AuditLog.find()
@@ -87,6 +93,9 @@ export const getSuperuserStats = catchAsync(async (req, res, next) => {
             stats: {
                 totalUsers,
                 totalCourses,
+                draftCourses,
+                publishedCourses,
+                archivedCourses,
                 totalMentors,
                 totalCandidates,
                 newUsersThisWeek
@@ -130,8 +139,8 @@ export const getMentorStats = catchAsync(async (req, res, next) => {
         activeCourses: myCourses.filter(c => c.status === 'published').length,
         totalStudents: enrollmentData.length,
         averageRating: myCourses.length > 0 
-            ? (myCourses.reduce((acc, curr) => acc + (curr.averageRating || 0), 0) / myCourses.length).toFixed(1)
-            : 0
+            ? (myCourses.reduce((acc, curr) => acc + (curr.averageRating || 0), 0) / (myCourses.length || 1)).toFixed(1)
+            : "0.0"
     };
 
     res.status(httpStatus.SUCCESS).json({

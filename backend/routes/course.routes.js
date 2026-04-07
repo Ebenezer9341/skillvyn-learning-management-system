@@ -11,7 +11,8 @@ import {
     uploadCourseVideo,
     uploadCourseAsset,
     uploadCourseThumbnail,
-    getGlobalPlatformStats
+    getGlobalPlatformStats,
+    getCourseStats
 } from "../controllers/course.controller.js";
 import { protect, restrictTo } from "../middlewares/auth.middleware.js";
 import { uploadVideo, uploadAsset, uploadThumbnail } from "../middlewares/upload.middleware.js";
@@ -37,6 +38,12 @@ router.get(
     "/global-stats",
     restrictTo("superuser", "admin"),
     getGlobalPlatformStats
+);
+
+router.get(
+    "/stats",
+    restrictTo("superuser", "admin", "mentor"),
+    getCourseStats
 );
 
 router.get(
@@ -67,7 +74,7 @@ router.patch(
 
 router.delete(
     "/:id", 
-    restrictTo("superuser", "admin", "mentor"), 
+    restrictTo("superuser", "admin"), 
     deleteCourse
 );
 

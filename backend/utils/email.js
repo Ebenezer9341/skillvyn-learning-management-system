@@ -33,6 +33,7 @@ class Email {
             console.log(`From:    ${this.from}`);
             console.log(`Subject: ${subject}`);
             console.log(`Content: ${textContent}`);
+            if (this.url) console.log(`URL:     ${this.url}`);
             console.log('--- 📧 VIRTUAL EMAIL END ---\n');
             return;
         }
@@ -65,8 +66,8 @@ class Email {
      */
     async sendWelcome() {
         await this.send(
-            'welcome', 
-            'Welcome to Skillvyn!', 
+            'welcome',
+            'Welcome to Skillvyn!',
             'We are so excited to have you join our learning community. Get started by exploring our courses!'
         );
     }
@@ -75,11 +76,14 @@ class Email {
      * Staff/Admin Welcome Email
      * Sent when an admin manually creates a user.
      */
-    async sendStaffWelcome(password) {
+    // ✅ AFTER
+    async sendStaffWelcome() {
         await this.send(
             'staff-welcome',
             'Your Skillvyn Account is Ready',
-            `An administrator has created an account for you. <br><br> <strong>Email:</strong> ${this.to} <br> <strong>Temporary Password:</strong> ${password} <br><br> Please log in and change your password immediately.`
+            `An administrator has created an account for you on Skillvyn.<br><br>
+         <strong>Email:</strong> ${this.to}<br><br>
+         Please click the button below to set your password. This link expires in 24 hours.`
         );
     }
 
@@ -92,10 +96,10 @@ class Email {
         if (invoiceNumber) {
             content += `<br><br><strong>Order Details:</strong><br>Invoice: ${invoiceNumber}<br>Amount Paid: ₹${amount}`;
         }
-        
+
         await this.send(
-            'enrollment', 
-            'Course Enrollment Successful', 
+            'enrollment',
+            'Course Enrollment Successful',
             content
         );
     }
@@ -107,7 +111,7 @@ class Email {
     async sendBatchEnrollmentConfirmation(courseTitles, totalAmount) {
         const list = courseTitles.map(t => `<li>${t}</li>`).join('');
         let content = `You have successfully enrolled in the following courses: <ul style="margin-top: 10px;">${list}</ul>`;
-        
+
         if (totalAmount) {
             content += `<br><strong>Total Paid:</strong> ₹${totalAmount}`;
         }
@@ -125,8 +129,8 @@ class Email {
      */
     async sendOrderConfirmation(orderId, amount) {
         await this.send(
-            'order', 
-            'Purchase Receipt: Skillvyn', 
+            'order',
+            'Purchase Receipt: Skillvyn',
             `Your payment for ₹${amount} was successful. Order ID: ${orderId}.`
         );
     }
@@ -152,6 +156,30 @@ class Email {
             'certification',
             'Congratulations! You are Certified!',
             `Fantastic work! You have successfully completed all requirements for <strong>"${courseTitle}"</strong>.<br><br> Your Certificate ID is: <strong>${certificateId}</strong>. You can view and download your professional certificate from your learning dashboard.`
+        );
+    }
+
+    /**
+     * Password Reset Email
+     * Sent when a user requests a password reset.
+     */
+    async sendPasswordReset() {
+        await this.send(
+            'password-reset',
+            'Reset Your Password',
+            `You requested a password reset. Click the button below to reset your password. This link expires in 15 minutes.<br><br>If you didn't request this, please ignore this email.`
+        );
+    }
+
+    /**
+     * Email Verification
+     * Sent when a user registers.
+     */
+    async sendVerificationEmail() {
+        await this.send(
+            'email-verification',
+            'Verify your Email Address',
+            `Thank you for creating an account on Skillvyn! Please click the button below to verify your email address. This link expires in 24 hours.`
         );
     }
 }

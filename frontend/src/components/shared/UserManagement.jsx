@@ -66,8 +66,8 @@ const UserRowActions = ({ user, currentUser, onEdit }) => {
             <button 
                 ref={refs.setReference}
                 {...getReferenceProps()}
-                className={`p-2 rounded-xl transition-all shadow-sm flex items-center justify-center ${
-                    isOpen ? 'bg-slate-900 text-white shadow-lg shadow-slate-200' : 'bg-slate-50 text-slate-400 hover:text-slate-900 hover:bg-slate-100'
+                className={`p-2 rounded-2xl transition-all shadow-sm flex items-center justify-center ${
+                    isOpen ? 'bg-secondary text-white shadow-lg shadow-secondary/10' : 'bg-slate-50 text-slate-400 hover:text-secondary hover:bg-slate-100'
                 }`} 
                 title="More options"
             >
@@ -98,7 +98,7 @@ const UserRowActions = ({ user, currentUser, onEdit }) => {
                                         setIsOpen(false);
                                         onEdit(user);
                                     }}
-                                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-all duration-200 shadow-sm sm:shadow-none"
+                                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-slate-600 hover:bg-primary/5 hover:text-primary rounded-2xl transition-all duration-200 shadow-sm sm:shadow-none"
                                 >
                                     <Edit size={14} className="opacity-70" />
                                     <span className="text-[10px] font-black uppercase tracking-widest">Edit User</span>
@@ -111,7 +111,7 @@ const UserRowActions = ({ user, currentUser, onEdit }) => {
                                         setIsOpen(false);
                                         navigate(`/${currentUser.role}/user/${user._id}`);
                                     }}
-                                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-xl transition-all duration-200"
+                                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-2xl transition-all duration-200"
                                 >
                                     <ExternalLink size={14} className="opacity-70" />
                                     <span className="text-[10px] font-black uppercase tracking-widest">View Profile</span>
@@ -191,13 +191,13 @@ const UserManagement = () => {
     const getRoleBadge = (role) => {
         switch (role) {
             case 'admin':
-                return 'bg-amber-100 text-amber-700 border-amber-200';
+                return 'bg-accent/10 text-accent border-accent/20 font-bold uppercase tracking-tighter shadow-sm';
             case 'mentor':
-                return 'bg-blue-100 text-blue-700 border-blue-200';
+                return 'bg-primary/10 text-primary border-primary/20 font-bold uppercase tracking-tighter shadow-sm';
             case 'candidate':
-                return 'bg-purple-100 text-purple-700 border-purple-200';
+                return 'bg-secondary/10 text-secondary border-secondary/20 font-bold uppercase tracking-tighter shadow-sm';
             default:
-                return 'bg-slate-100 text-slate-700 border-slate-200';
+                return 'bg-slate-100 text-slate-700 border-slate-200 font-bold uppercase tracking-tighter';
         }
     };
 
@@ -299,21 +299,21 @@ const UserManagement = () => {
                             placeholder="Search names or emails..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="block w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-slate-400 shadow-sm"
+                            className="block w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-2xl text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-slate-400 shadow-sm"
                         />
                     </div>
                     
                     <button 
                         onClick={handleExport}
-                        className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-all shadow-sm w-full sm:w-auto active:scale-95"
+                        className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-2xl text-sm font-semibold hover:bg-slate-50 transition-all shadow-sm w-full sm:w-auto active:scale-95"
                     >
                         <Download size={16} />
-                        <span>Export Users</span>
+                        <span>Export Data</span>
                     </button>
 
                     <button 
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="flex items-center justify-center gap-2 bg-primary text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-all shadow-sm shadow-primary/20 w-full sm:w-auto active:scale-95"
+                        className="flex items-center justify-center gap-2 bg-primary text-white px-4 py-2 rounded-2xl text-sm font-semibold hover:bg-primary/90 transition-all shadow-sm shadow-primary/20 w-full sm:w-auto active:scale-95"
                     >
                         <UserPlus size={16} />
                         <span>Add User</span>
@@ -325,14 +325,14 @@ const UserManagement = () => {
             <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
                 <div className="flex flex-wrap items-center gap-4">
                     {/* Role Tabs Integrated into filter bar */}
-                    <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-xl">
+                    <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-2xl">
                         {availableRoles.map((role) => (
                             <button
                                 key={role}
                                 onClick={() => setActiveTab(role)}
                                 className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all capitalize whitespace-nowrap ${
                                     activeTab === role 
-                                    ? 'bg-white text-primary shadow-sm' 
+                                    ? 'bg-white text-primary shadow-sm rounded-xl' 
                                     : 'text-slate-500 hover:text-slate-700'
                                 }`}
                             >
@@ -347,7 +347,7 @@ const UserManagement = () => {
                     <select 
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="bg-slate-50 border border-slate-100 text-slate-600 text-xs font-bold px-3 py-2 rounded-xl focus:outline-none hover:bg-slate-100 transition-all cursor-pointer shadow-sm"
+                        className="bg-slate-50 border border-slate-100 text-slate-600 text-xs font-bold px-3 py-2 rounded-2xl focus:outline-none hover:bg-slate-100 transition-all cursor-pointer shadow-sm"
                     >
                         <option value="all">All Status</option>
                         <option value="active">Active Only</option>
@@ -364,7 +364,7 @@ const UserManagement = () => {
                                 type="date"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                className="bg-slate-50 border border-slate-100 text-slate-600 text-[11px] font-bold pl-9 pr-3 py-2 rounded-xl focus:outline-none shadow-sm w-36"
+                                className="bg-slate-50 border border-slate-100 text-slate-600 text-[11px] font-bold pl-9 pr-3 py-2 rounded-2xl focus:outline-none shadow-sm w-36"
                                 placeholder="From Date"
                             />
                         </div>
@@ -446,7 +446,7 @@ const UserManagement = () => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-5">
-                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border capitalize ${getRoleBadge(user.role)}`}>
+                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-2xl text-[10px] border capitalize ${getRoleBadge(user.role)}`}>
                                                 {getRoleIcon(user.role)}
                                                 {user.role}
                                             </span>

@@ -5,15 +5,26 @@ import { body } from "express-validator";
  */
 export const courseValidation = [
     body("title")
+        .optional()
         .trim()
         .notEmpty().withMessage("Course title is required")
         .isLength({ max: 100 }).withMessage("Title cannot exceed 100 characters"),
         
     body("description")
+        .optional()
         .trim()
         .notEmpty().withMessage("Course description is required"),
         
+    body("status")
+        .optional()
+        .isIn(["draft", "published", "archived", "pending"]).withMessage("Invalid status value"),
+
+    body("approvalRequest")
+        .optional()
+        .isObject().withMessage("Approval request must be an object"),
+        
     body("category")
+        .optional()
         .trim()
         .notEmpty().withMessage("Category is required")
         .isIn([
@@ -42,7 +53,7 @@ export const courseValidation = [
         
     body("thumbnail")
         .optional({ checkFalsy: true })
-        .isURL().withMessage("Thumbnail must be a valid URL"),
+        .trim(),
 
     // Certification Hub Validation
     body("certification.enabled")

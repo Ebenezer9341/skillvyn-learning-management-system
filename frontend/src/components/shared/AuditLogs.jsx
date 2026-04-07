@@ -8,22 +8,14 @@ import { useAuth } from '../../context/AuthContext';
 
 const getActionColor = (action) => {
     switch (action?.toUpperCase()) {
-        case 'LOGIN':
-            return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-        case 'LOGOUT':
-            return 'bg-slate-50 text-slate-400 border-slate-100';
-        case 'CREATE':
-            return 'bg-blue-50 text-blue-600 border-blue-100';
-        case 'UPDATE':
-            return 'bg-amber-50 text-amber-600 border-amber-100';
-        case 'DELETE':
-            return 'bg-rose-50 text-rose-600 border-rose-100';
-        case 'RATE':
-            return 'bg-purple-50 text-purple-600 border-purple-100';
-        case 'ARCHIVE':
-            return 'bg-slate-100 text-slate-500 border-slate-200';
-        case 'ENROLL':
-            return 'bg-indigo-50 text-indigo-600 border-indigo-100';
+        case 'LOGIN': return 'bg-accent/10 text-accent border-accent/20';
+        case 'LOGOUT': return 'bg-slate-50 text-slate-400 border-slate-100';
+        case 'CREATE': return 'bg-primary/10 text-primary border-primary/20';
+        case 'UPDATE': return 'bg-highlight/10 text-highlight border-highlight/20';
+        case 'DELETE': return 'bg-secondary/10 text-secondary border-secondary/20';
+        case 'RATE': return 'bg-primary/10 text-primary border-primary/20';
+        case 'ARCHIVE': return 'bg-slate-100 text-slate-500 border-slate-200';
+        case 'ENROLL': return 'bg-secondary/10 text-secondary border-secondary/20';
         default:
             return 'bg-slate-50 text-slate-600 border-slate-100';
     }
@@ -150,7 +142,7 @@ const AuditLogs = () => {
                 <AlertCircle size={48} className="text-rose-500 mb-4" />
                 <h3 className="text-xl font-bold text-slate-800 mb-2">Error Loading Logs</h3>
                 <p className="text-slate-500 mb-6 text-center max-w-md">{error}</p>
-                <button onClick={fetchLogs} className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-all">
+                <button onClick={fetchLogs} className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-2xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
                     <RefreshCw size={18} />
                     Try Again
                 </button>
@@ -171,10 +163,10 @@ const AuditLogs = () => {
                 </div>
                 <button 
                     onClick={handleExport}
-                    className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-all shadow-sm active:scale-95"
+                    className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-2xl text-sm font-semibold hover:bg-slate-50 transition-all shadow-sm active:scale-95"
                 >
                     <Download size={16} />
-                    <span>Export Logs</span>
+                    <span>Export Data</span>
                 </button>
             </div>
 
@@ -188,14 +180,14 @@ const AuditLogs = () => {
                             <input
                                 type="text"
                                 placeholder="Search logs by user, action or resource..."
-                                className="w-full bg-white border border-slate-200 py-2.5 pl-10 pr-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm shadow-sm"
+                                className="w-full bg-white border border-slate-200 py-2.5 pl-10 pr-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm shadow-sm"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
                         <div className="flex items-center gap-3 w-full lg:w-auto">
                             <select
-                                className="bg-white border border-slate-200 py-2.5 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm shadow-sm cursor-pointer flex-1 lg:flex-none"
+                                className="bg-white border border-slate-200 py-2.5 px-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm shadow-sm cursor-pointer flex-1 lg:flex-none"
                                 value={selectedAction}
                                 onChange={(e) => setSelectedAction(e.target.value)}
                             >
@@ -210,7 +202,7 @@ const AuditLogs = () => {
                                 <option value="Enroll">Enroll</option>
                             </select>
                             <select
-                                className="bg-white border border-slate-200 py-2.5 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm shadow-sm cursor-pointer flex-1 lg:flex-none"
+                                className="bg-white border border-slate-200 py-2.5 px-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm shadow-sm cursor-pointer flex-1 lg:flex-none"
                                 value={selectedResource}
                                 onChange={(e) => setSelectedResource(e.target.value)}
                             >
@@ -221,7 +213,7 @@ const AuditLogs = () => {
                                 <option value="Course">Course</option>
                             </select>
                             <select
-                                className="bg-white border border-slate-200 py-2.5 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm shadow-sm cursor-pointer flex-1 lg:flex-none"
+                                className="bg-white border border-slate-200 py-2.5 px-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm shadow-sm cursor-pointer flex-1 lg:flex-none"
                                 value={selectedRole}
                                 onChange={(e) => setSelectedRole(e.target.value)}
                             >
@@ -237,7 +229,7 @@ const AuditLogs = () => {
                                     </>
                                 )}
                             </select>
-                            <button onClick={() => fetchLogs(1)} className="p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all text-slate-400">
+                            <button onClick={() => fetchLogs(1)} className="p-2.5 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all text-slate-400">
                                 <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
                             </button>
                         </div>
@@ -271,13 +263,13 @@ const AuditLogs = () => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-5">
-                                            <div className="h-6 w-16 bg-slate-100 rounded-full"></div>
+                                            <div className="h-6 w-16 bg-slate-100 rounded-2xl"></div>
                                         </td>
                                         <td className="px-6 py-5">
                                             <div className="h-4 w-20 bg-slate-100 rounded"></div>
                                         </td>
                                         <td className="px-6 py-5">
-                                            <div className="h-6 w-20 bg-slate-100 rounded-full"></div>
+                                            <div className="h-6 w-20 bg-slate-100 rounded-2xl"></div>
                                         </td>
                                         <td className="px-6 py-5">
                                             <div className="space-y-2">
@@ -286,7 +278,7 @@ const AuditLogs = () => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-5 text-right">
-                                            <div className="h-8 w-8 bg-slate-50 rounded-lg ml-auto"></div>
+                                            <div className="h-8 w-8 bg-slate-50 rounded-2xl ml-auto"></div>
                                         </td>
                                     </tr>
                                 ))
@@ -337,7 +329,7 @@ const AuditLogs = () => {
                                         <td className="px-6 py-4 text-right whitespace-nowrap">
                                             <button
                                                 onClick={() => handleViewDetails(log)}
-                                                className="p-2 text-slate-400 hover:text-primary hover:bg-slate-100 rounded-lg transition-all"
+                                                className="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-2xl transition-all"
                                                 title="View Details"
                                             >
                                                 <Eye size={16} />
@@ -372,7 +364,7 @@ const AuditLogs = () => {
                         <button 
                             disabled={currentPage === 1 || loading}
                             onClick={() => fetchLogs(currentPage - 1)}
-                            className="px-4 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                            className="px-4 py-1.5 border border-slate-200 rounded-2xl text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
                         >
                             Previous
                         </button>
@@ -389,7 +381,7 @@ const AuditLogs = () => {
                                     <button
                                         key={pageNum}
                                         onClick={() => fetchLogs(pageNum)}
-                                        className={`w-8 h-8 rounded-lg text-xs font-bold flex items-center justify-center transition-all ${
+                                        className={`w-8 h-8 rounded-2xl text-xs font-bold flex items-center justify-center transition-all ${
                                             currentPage === pageNum 
                                             ? 'bg-primary text-white shadow-md shadow-primary/20' 
                                             : 'text-slate-500 hover:bg-white hover:text-primary'
@@ -403,7 +395,7 @@ const AuditLogs = () => {
                         <button 
                             disabled={currentPage === totalPages || loading}
                             onClick={() => fetchLogs(currentPage + 1)}
-                            className="px-4 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                            className="px-4 py-1.5 border border-slate-200 rounded-2xl text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
                         >
                             Next
                         </button>

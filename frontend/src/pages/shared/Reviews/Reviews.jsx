@@ -136,29 +136,29 @@ const Reviews = () => {
             {/* Header Section */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
                 <div>
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 mb-4">
-                        <MessageSquare size={12} className="text-indigo-500" />
-                        <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Moderation Center</span>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 mb-4 font-bold">
+                        <MessageSquare size={12} className="text-primary" />
+                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">Moderation Center</span>
                     </div>
                     <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-2">Platform Reviews</h1>
                     <p className="text-slate-400 font-medium max-w-lg text-sm">Audit and moderate global student feedback across all specialized curriculums.</p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-4 bg-white p-3 rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/50">
+                <div className="flex flex-col sm:flex-row items-center gap-4 bg-white p-3 rounded-2xl border border-slate-100 shadow-2xl shadow-slate-200/50">
                     <div className="relative w-full sm:w-80">
                         <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                         <input
                             type="text"
                             placeholder="Search feedback context..."
-                            className="pl-14 pr-6 py-4 bg-slate-50 border-none rounded-[2rem] text-sm focus:ring-2 focus:ring-primary/20 w-full transition-all font-medium placeholder:text-slate-300"
+                            className="pl-14 pr-6 py-4 bg-slate-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-primary/20 w-full transition-all font-medium placeholder:text-slate-300"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <div className="flex items-center gap-2 bg-slate-50 rounded-[2rem] px-4 py-2 w-full sm:w-auto">
+                    <div className="flex items-center gap-2 bg-slate-50 rounded-2xl px-4 py-2 w-full sm:w-auto">
                         <Filter size={16} className="text-slate-400 shrink-0" />
                         <select
-                            className="bg-transparent border-none py-2 rounded-[1.5rem] text-xs font-black text-slate-700 focus:ring-0 cursor-pointer w-full"
+                            className="bg-transparent border-none py-2 rounded-2xl text-xs font-black text-slate-700 focus:ring-0 cursor-pointer w-full"
                             value={selectedRating}
                             onChange={(e) => setSelectedRating(e.target.value)}
                         >
@@ -170,7 +170,7 @@ const Reviews = () => {
                     </div>
                     <button
                         onClick={() => fetchReviews(currentPage)}
-                        className="p-4 bg-primary text-white rounded-[2rem] hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 shrink-0"
+                        className="p-4 bg-primary text-white rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 shrink-0"
                     >
                         <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
                     </button>
@@ -193,8 +193,8 @@ const Reviews = () => {
                                     <h3 className="text-4xl font-black text-slate-900 tracking-tighter">{stat.value}</h3>
                                     <p className="text-[10px] font-bold text-slate-300 mt-1 uppercase tracking-widest">{stat.sub}</p>
                                 </div>
-                                <div className={`w-14 h-14 rounded-2xl bg-${stat.color}-50 flex items-center justify-center group-hover:scale-110 transition-transform inner-shadow`}>
-                                    <stat.icon className={`text-${stat.color}-500`} size={24} />
+                                <div className={`w-14 h-14 rounded-2xl bg-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform inner-shadow font-bold`}>
+                                    <stat.icon className={`text-primary`} size={24} />
                                 </div>
                             </div>
                         </div>

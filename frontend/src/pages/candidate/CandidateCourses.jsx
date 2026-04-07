@@ -74,7 +74,7 @@ const CandidateCourses = () => {
             </header>
 
             {enrollments.length === 0 ? (
-                <div className="bg-white rounded-[2.5rem] p-12 text-center border border-slate-100 shadow-sm flex flex-col items-center">
+                <div className="bg-white rounded-2xl p-12 text-center border border-slate-100 shadow-sm flex flex-col items-center">
                     <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
                         <BookOpen size={40} className="text-slate-300" />
                     </div>
@@ -84,7 +84,7 @@ const CandidateCourses = () => {
                     </p>
                     <button 
                         onClick={() => navigate('/candidate')}
-                        className="mt-8 px-8 py-3 bg-primary text-white rounded-xl font-bold hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-95"
+                        className="mt-8 px-8 py-3 bg-primary text-white rounded-2xl font-bold hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-95"
                     >
                         Browse Curriculums
                     </button>
@@ -99,11 +99,11 @@ const CandidateCourses = () => {
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: index * 0.1, duration: 0.3 }}
                                 key={enrollment._id}
-                                className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col relative"
+                                className="bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col relative"
                             >
                                 {/* Status Badge */}
                                 {enrollment?.certificationTracking?.isCertified && (
-                                    <div className="absolute top-4 right-4 z-10 bg-emerald-500 text-white p-2 rounded-full shadow-lg" title="Officially Certified">
+                                    <div className="absolute top-4 right-4 z-10 bg-accent text-white p-2 rounded-full shadow-lg" title="Officially Certified">
                                         <Award size={20} />
                                     </div>
                                 )}
@@ -144,7 +144,7 @@ const CandidateCourses = () => {
                                             {course.instructor?.avatar ? (
                                                 <img src={course.instructor.avatar} alt="" className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="w-full h-full bg-blue-100 flex items-center justify-center text-[10px] font-bold text-blue-600">
+                                                <div className="w-full h-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
                                                     {course.instructor?.firstName?.charAt(0)}
                                                 </div>
                                             )}
@@ -160,10 +160,10 @@ const CandidateCourses = () => {
                                             <div className="flex items-center gap-1.5 text-slate-400">
                                                 <Clock size={14} />
                                                 <span className="text-[11px] font-bold uppercase tracking-wider">
-                                                    {course.duration}
+                                                    {course.duration || '0m'}
                                                 </span>
                                             </div>
-                                            <span className={`text-sm font-black ${enrollment.progress === 100 ? 'text-emerald-500' : 'text-primary'}`}>
+                                            <span className={`text-sm font-black ${enrollment.progress === 100 ? 'text-accent' : 'text-primary'}`}>
                                                 {enrollment.progress}%
                                             </span>
                                         </div>
@@ -172,7 +172,7 @@ const CandidateCourses = () => {
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${enrollment.progress}%` }}
                                                 transition={{ duration: 1, delay: 0.2 + (index * 0.1) }}
-                                                className={`h-full rounded-full relative ${enrollment.progress === 100 ? 'bg-emerald-500' : 'bg-primary'}`}
+                                                className={`h-full rounded-full relative ${enrollment.progress === 100 ? 'bg-accent' : 'bg-primary'}`}
                                             >
                                                 {enrollment.progress < 100 && (
                                                     <div className="absolute inset-0 bg-white/20 w-full animate-pulse" />
@@ -186,7 +186,7 @@ const CandidateCourses = () => {
                                         {enrollment?.certificationTracking?.isCertified && (
                                             <button 
                                                 onClick={() => navigate(`/courses/certificate/${course._id}`)}
-                                                className="w-full py-3 px-4 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-emerald-100 transition-colors"
+                                                className="w-full py-3 px-4 bg-accent/5 border border-accent/10 text-accent rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-accent/10 transition-colors"
                                             >
                                                 <Award size={18} />
                                                 <span>View Certificate</span>
@@ -195,7 +195,7 @@ const CandidateCourses = () => {
                                         {enrollment.progress < 100 ? (
                                             <button 
                                                 onClick={() => navigate(`/courses/view/${course._id}`)}
-                                                className="w-full py-3 px-4 bg-primary text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-[0.98]"
+                                                className="w-full py-3 px-4 bg-primary text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-[0.98]"
                                             >
                                                 <span>Continue Course</span>
                                                 <ChevronRight size={18} />
@@ -204,7 +204,7 @@ const CandidateCourses = () => {
                                             !enrollment?.certificationTracking?.isCertified && (
                                                 <button 
                                                     onClick={() => navigate(`/courses/view/${course._id}`)}
-                                                    className="w-full py-3 px-4 border-2 border-primary/20 text-primary rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary/5 transition-all"
+                                                    className="w-full py-3 px-4 border-2 border-primary/20 text-primary rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary/5 transition-all"
                                                 >
                                                     <span>Review Course</span>
                                                 </button>
@@ -221,7 +221,7 @@ const CandidateCourses = () => {
                                                             setRating(enrollment.rating);
                                                             setReview(enrollment.review || '');
                                                         }}
-                                                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-4 bg-slate-50 rounded-xl hover:bg-amber-50 group/rate transition-colors border border-transparent hover:border-amber-100"
+                                                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-4 bg-slate-50 rounded-2xl hover:bg-amber-50 group/rate transition-colors border border-transparent hover:border-amber-100"
                                                     >
                                                         <div className="flex items-center gap-0.5">
                                                             {[...Array(5)].map((_, i) => (
@@ -241,7 +241,7 @@ const CandidateCourses = () => {
                                                             setRating(0);
                                                             setReview('');
                                                         }}
-                                                        className="flex-1 py-2.5 px-4 border border-amber-100 text-amber-600 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-amber-50 transition-all active:scale-[0.98]"
+                                                        className="flex-1 py-2.5 px-4 border border-amber-100 text-amber-600 rounded-2xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-amber-50 transition-all active:scale-[0.98]"
                                                     >
                                                         <Star size={14} />
                                                         <span>Rate</span>
@@ -251,7 +251,7 @@ const CandidateCourses = () => {
                                             
                                             <button 
                                                 onClick={() => navigate(`/candidate/course/forum/${course._id}`)}
-                                                className="flex-1 py-2.5 px-4 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-indigo-100 transition-all shadow-sm active:scale-95"
+                                                className="flex-1 py-2.5 px-4 bg-primary/5 border border-primary/10 text-primary rounded-2xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-primary/10 transition-all shadow-sm active:scale-95"
                                             >
                                                 <MessageCircle size={14} />
                                                 <span>Forum</span>
@@ -280,7 +280,7 @@ const CandidateCourses = () => {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="bg-white rounded-[2.5rem] w-full max-w-lg relative z-10 overflow-hidden shadow-2xl"
+                            className="bg-white rounded-2xl w-full max-w-lg relative z-10 overflow-hidden shadow-2xl"
                         >
                             <div className="p-8">
                                 <div className="flex justify-between items-start mb-6">
@@ -304,7 +304,7 @@ const CandidateCourses = () => {
 
                                 <div className="space-y-8">
                                     {/* Star Rating */}
-                                    <div className="flex flex-col items-center gap-4 py-4 bg-slate-50/50 rounded-3xl border border-slate-100">
+                                    <div className="flex flex-col items-center gap-4 py-4 bg-slate-50/50 rounded-2xl border border-slate-100">
                                         <p className="text-xs font-black text-slate-400 uppercase tracking-widest">How was your experience?</p>
                                         <div className="flex items-center gap-2">
                                             {[1, 2, 3, 4, 5].map((star) => (
@@ -343,7 +343,7 @@ const CandidateCourses = () => {
                                             value={review}
                                             onChange={(e) => setReview(e.target.value)}
                                             placeholder="Tell others what you think about this course..."
-                                            className="w-full h-32 p-5 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium resize-none"
+                                            className="w-full h-32 p-5 bg-slate-50 border border-slate-100 rounded-2xl text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all font-medium resize-none"
                                             maxLength={500}
                                         />
                                         <div className="flex justify-end">
@@ -354,7 +354,7 @@ const CandidateCourses = () => {
                                     <button 
                                         onClick={handleRatingSubmit}
                                         disabled={submittingRating || rating === 0}
-                                        className="w-full py-5 bg-primary text-white rounded-[1.5rem] font-black shadow-xl shadow-primary/20 hover:shadow-2xl transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 text-sm uppercase tracking-widest"
+                                        className="w-full py-5 bg-primary text-white rounded-2xl font-black shadow-xl shadow-primary/20 hover:shadow-2xl transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 text-sm uppercase tracking-widest"
                                     >
                                         {submittingRating ? (
                                             <Loader2 size={20} className="animate-spin" />

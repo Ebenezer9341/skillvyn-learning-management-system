@@ -120,8 +120,8 @@ const CertificationHub = () => {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
                 <div className="text-center">
-                    <Loader2 size={40} className="animate-spin text-indigo-600 mx-auto mb-4" />
-                    <p className="text-slate-500 font-black uppercase tracking-widest text-xs">Entering Hub...</p>
+                    <Loader2 size={40} className="animate-spin text-primary mx-auto mb-4" />
+                    <p className="text-slate-500 font-black uppercase tracking-widest text-[10px]">Entering Hub...</p>
                 </div>
             </div>
         );
@@ -143,7 +143,7 @@ const CertificationHub = () => {
                             <ArrowLeft size={20} />
                         </button>
                         <div>
-                            <div className="flex items-center gap-2 text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-2">
+                            <div className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-2">
                                 <Award size={14} /> Certification Hub
                             </div>
                             <h1 className="text-3xl font-black text-slate-900 leading-tight">{course.title}</h1>
@@ -155,29 +155,29 @@ const CertificationHub = () => {
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-indigo-600 rounded-[3rem] p-12 text-center text-white shadow-2xl shadow-indigo-200 relative overflow-hidden"
+                        className="bg-primary rounded-2xl p-12 text-center text-white shadow-2xl shadow-primary/20 relative overflow-hidden"
                     >
                         <div className="absolute top-0 right-0 p-20 opacity-10 rotate-12">
                             <Trophy size={300} />
                         </div>
                         <div className="relative z-10">
-                            <div className="w-24 h-24 bg-white/20 backdrop-blur-xl rounded-[2rem] flex items-center justify-center mx-auto mb-8 border border-white/30 text-white">
+                            <div className="w-24 h-24 bg-white/20 backdrop-blur-xl rounded-2xl flex items-center justify-center mx-auto mb-8 border border-white/30 text-white">
                                 <Trophy size={48} />
                             </div>
                             <h2 className="text-5xl font-black mb-4">You're Certified!</h2>
-                            <p className="text-indigo-100 text-lg font-medium max-w-xl mx-auto mb-10 leading-loose">
+                            <p className="text-primary-50 text-lg font-medium max-w-xl mx-auto mb-10 leading-loose">
                                 Congratulations! You have successfully completed all the requirements for this course and earned your official certification.
                             </p>
                             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                                 <button 
                                     onClick={() => navigate(`/courses/certificate/${id}`)}
-                                    className="px-8 py-4 bg-white text-indigo-600 rounded-2xl font-black shadow-xl hover:scale-105 transition-all flex items-center gap-2"
+                                    className="px-8 py-4 bg-white text-primary rounded-2xl font-black shadow-xl hover:scale-105 transition-all flex items-center gap-2"
                                 >
                                     <Award size={18} /> View Certificate
                                 </button>
                                 <button 
                                     onClick={() => navigate('/candidate/courses')}
-                                    className="px-8 py-4 bg-indigo-500 text-white border border-white/20 rounded-2xl font-black hover:bg-indigo-400 transition-all"
+                                    className="px-8 py-4 bg-primary/20 text-white border border-white/20 rounded-2xl font-black hover:bg-white/30 transition-all"
                                 >
                                     My Courses
                                 </button>
@@ -188,7 +188,7 @@ const CertificationHub = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {/* Requirement Tracker */}
                         <div className="md:col-span-1 space-y-6">
-                            <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm h-fit">
+                            <div className="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm h-fit">
                                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-8">Requirements</h3>
                                 <div className="space-y-6">
                                     {/* 1. Progress Check (Always true if they are here) */}
@@ -226,8 +226,8 @@ const CertificationHub = () => {
                                         <div className="flex items-center gap-4">
                                             <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                                                 certificationTracking.projectStatus === 'approved' 
-                                                ? 'bg-emerald-500 text-white' 
-                                                : (certificationTracking.projectStatus === 'rejected' ? 'bg-rose-500 text-white' : (certificationTracking.projectStatus === 'submitted' ? 'bg-indigo-100 text-indigo-500 animate-pulse' : 'bg-slate-100 text-slate-300'))
+                                                ? 'bg-accent text-white' 
+                                                : (certificationTracking.projectStatus === 'rejected' ? 'bg-rose-500 text-white' : (certificationTracking.projectStatus === 'submitted' ? 'bg-primary/10 text-primary animate-pulse' : 'bg-slate-100 text-slate-300'))
                                             }`}>
                                                 {certificationTracking.projectStatus === 'approved' ? <Check size={16} strokeWidth={3} /> : <Github size={16} />}
                                             </div>
@@ -243,7 +243,7 @@ const CertificationHub = () => {
                                 </div>
                             </div>
 
-                            <div className="bg-amber-50 rounded-[2rem] p-8 border border-amber-100/50">
+                            <div className="bg-amber-50 rounded-2xl p-8 border border-amber-100/50">
                                 <div className="flex gap-4">
                                     <AlertCircle size={20} className="text-amber-600 shrink-0" />
                                     <div className="space-y-2">
@@ -263,14 +263,14 @@ const CertificationHub = () => {
                                 <motion.div 
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm space-y-8"
+                                    className="bg-white rounded-2xl p-10 border border-slate-100 shadow-sm space-y-8"
                                 >
                                     <div className="flex items-start justify-between">
                                         <div>
                                             <h3 className="text-xl font-black text-slate-900">Final Assessment</h3>
                                             <p className="text-slate-500 text-sm mt-1">Answer these questions to demonstrate your mastery.</p>
                                         </div>
-                                        <div className="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-indigo-100 italic">
+                                        <div className="bg-primary/5 text-primary px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-primary/10 italic">
                                             Goal: {certification.mcqPassingScore}%+
                                         </div>
                                     </div>
@@ -289,13 +289,13 @@ const CertificationHub = () => {
                                                             onClick={() => setAnswers(prev => ({ ...prev, [qIdx]: oIdx }))}
                                                             className={`p-4 rounded-2xl text-left text-sm font-bold transition-all border-2 ${
                                                                 answers[qIdx] === oIdx 
-                                                                ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-100' 
+                                                                ? 'bg-primary text-white border-primary shadow-xl shadow-primary/20 scale-[1.02]' 
                                                                 : 'bg-slate-50 text-slate-600 border-transparent hover:bg-slate-100 hover:border-slate-200'
                                                             }`}
                                                         >
-                                                            <div className="flex items-center gap-3">
-                                                                <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black ${
-                                                                    answers[qIdx] === oIdx ? 'bg-white/20' : 'bg-white text-slate-400'
+                                                            <div className="flex items-center gap-4">
+                                                                <span className={`w-8 h-8 rounded-2xl flex items-center justify-center text-[10px] font-black ${
+                                                                    answers[qIdx] === oIdx ? 'bg-white/20' : 'bg-white text-slate-400 border border-slate-100'
                                                                 }`}>
                                                                     {String.fromCharCode(65 + oIdx)}
                                                                 </span>
@@ -311,7 +311,7 @@ const CertificationHub = () => {
                                     <button 
                                         onClick={handleSubmitExam}
                                         disabled={submitting}
-                                        className="w-full py-5 bg-indigo-600 text-white rounded-[2rem] font-black uppercase tracking-[0.3em] text-xs shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:scale-[1.01] transition-all disabled:opacity-50"
+                                        className="w-full py-5 bg-secondary text-white rounded-2xl font-black uppercase tracking-[0.3em] text-xs shadow-xl shadow-secondary/10 hover:bg-secondary/90 hover:scale-[1.01] transition-all disabled:opacity-50"
                                     >
                                         {submitting ? <Loader2 className="animate-spin mx-auto" /> : 'Finish Exam & Grade'}
                                     </button>
@@ -323,7 +323,7 @@ const CertificationHub = () => {
                                 <motion.div 
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm space-y-8"
+                                    className="bg-white rounded-2xl p-10 border border-slate-100 shadow-sm space-y-8"
                                 >
                                     <div>
                                         <h3 className="text-xl font-black text-slate-900">Capstone Project Submission</h3>
@@ -332,7 +332,7 @@ const CertificationHub = () => {
                                         </p>
                                     </div>
 
-                                    <div className="bg-slate-50 p-6 rounded-3xl border border-dashed border-slate-200 space-y-4">
+                                    <div className="bg-slate-50 p-6 rounded-2xl border border-dashed border-slate-200 space-y-4">
                                         <div>
                                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">The Challenge</p>
                                             <div className="text-slate-700 text-sm font-medium leading-loose whitespace-pre-wrap">
@@ -347,31 +347,31 @@ const CertificationHub = () => {
                                                     href={certification.projectAsset.url} 
                                                     target="_blank" 
                                                     rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-3 px-5 py-3 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-purple-200 hover:bg-purple-50 group transition-all"
+                                                    className="inline-flex items-center gap-3 px-5 py-3 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-primary/20 hover:bg-primary/5 group transition-all"
                                                 >
-                                                    <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+                                                    <div className="w-8 h-8 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
                                                         <FileText size={18} />
                                                     </div>
                                                     <div className="text-left pr-4">
                                                         <p className="text-[11px] font-black text-slate-800 line-clamp-1">{certification.projectAsset.name}</p>
                                                         <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter mt-0.5">Click to Download / View</p>
                                                     </div>
-                                                    <Download size={14} className="text-slate-300 group-hover:text-purple-500 ml-auto" />
+                                                    <Download size={14} className="text-slate-300 group-hover:text-primary ml-auto" />
                                                 </a>
                                             </div>
                                         )}
                                     </div>
 
                                     {certificationTracking.projectStatus === 'submitted' ? (
-                                        <div className="bg-indigo-50 border border-indigo-100 p-8 rounded-3xl text-center space-y-4">
-                                            <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-indigo-600 mx-auto shadow-sm">
+                                        <div className="bg-primary/5 border border-primary/10 p-8 rounded-2xl text-center space-y-4 shadow-inner">
+                                            <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-primary mx-auto shadow-sm border border-primary/5">
                                                 <Clock size={32} className="animate-pulse" />
                                             </div>
                                             <div>
-                                                <p className="text-indigo-900 font-black uppercase tracking-widest text-xs">Submission Received</p>
-                                                <p className="text-indigo-600/70 text-[11px] font-bold mt-1">
+                                                <p className="text-primary font-black uppercase tracking-widest text-xs">Submission Received</p>
+                                                <p className="text-slate-500 text-[11px] font-bold mt-1 max-w-xs mx-auto">
                                                     Mentor is currently reviewing your code at: <br/>
-                                                    <span className="text-indigo-800 break-all">{certificationTracking.projectUrl}</span>
+                                                    <span className="text-primary break-all">{certificationTracking.projectUrl}</span>
                                                 </p>
                                             </div>
                                         </div>
@@ -386,7 +386,7 @@ const CertificationHub = () => {
                                                         value={projectUrl}
                                                         onChange={(e) => setProjectUrl(e.target.value)}
                                                         placeholder="https://github.com/yourname/project"
-                                                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 pl-14 pr-5 text-sm font-bold focus:ring-4 focus:ring-blue-100/50 placeholder:text-slate-300"
+                                                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 pl-14 pr-5 text-sm font-bold focus:ring-4 focus:ring-primary/10 placeholder:text-slate-300"
                                                     />
                                                 </div>
                                             </div>
@@ -401,7 +401,7 @@ const CertificationHub = () => {
                                             <button 
                                                 onClick={handleSubmitProject}
                                                 disabled={submitting}
-                                                className="w-full py-5 bg-purple-600 text-white rounded-[2rem] font-black uppercase tracking-[0.3em] text-xs shadow-xl shadow-purple-100 hover:bg-purple-700 hover:scale-[1.01] transition-all disabled:opacity-50"
+                                                className="w-full py-5 bg-secondary text-white rounded-2xl font-black uppercase tracking-[0.3em] text-xs shadow-xl shadow-secondary/10 hover:bg-secondary/90 hover:scale-[1.01] transition-all disabled:opacity-50"
                                             >
                                                 {submitting ? <Loader2 className="animate-spin mx-auto" /> : 'Submit Repository'}
                                             </button>

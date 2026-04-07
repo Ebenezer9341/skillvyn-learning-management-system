@@ -9,6 +9,12 @@ import { logActivity } from "../utils/logger.js";
 import crypto from "crypto";
 import Coupon from "../models/Coupon.model.js";
 import Email from "../utils/email.js";
+import { validateCouponForUse } from "../services/coupon.service.js";
+import mongoose from "mongoose";
+import Notification from "../models/Notification.model.js";
+import User from "../models/User.model.js";
+import { sendNotification } from '../utils/socketNotify.js';
+import { runTransaction } from "../utils/transaction.js";
 
 // Helper to generate a professional unique certificate ID
 const generateCertificateId = () => {
@@ -18,36 +24,153 @@ const generateCertificateId = () => {
     return `${prefix}-${year}-${random}`;
 };
 
+// Helper for time-series growth stats over last 6 months
+const getGrowthAggregation = async (matchQuery = {}) => {
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+    sixMonthsAgo.setDate(1);
+    sixMonthsAgo.setHours(0, 0, 0, 0);
+
+    const growthData = await Enrollment.aggregate([
+        {
+            $match: {
+                ...matchQuery,
+                createdAt: { $gte: sixMonthsAgo }
+            }
+        },
+        {
+            $group: {
+                _id: {
+                    year: { $year: "$createdAt" },
+                    month: { $month: "$createdAt" }
+                },
+                count: { $sum: 1 }
+            }
+        },
+        { $sort: { "_id.year": 1, "_id.month": 1 } }
+    ]);
+
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const result = [];
+
+    for (let i = 5; i >= 0; i--) {
+        const d = new Date();
+        d.setMonth(d.getMonth() - i);
+        const month = d.getMonth() + 1;
+        const year = d.getFullYear();
+
+        const monthPoint = growthData.find(g => g._id.month === month && g._id.year === year);
+        result.push({
+            label: monthNames[month - 1],
+            count: monthPoint ? monthPoint.count : 0
+        });
+    }
+    return result;
+};
+
+const getDailyGrowthAggregation = async (matchQuery = {}) => {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const growthData = await Enrollment.aggregate([
+        {
+            $match: {
+                ...matchQuery,
+                createdAt: { $gte: sevenDaysAgo }
+            }
+        },
+        {
+            $group: {
+                _id: {
+                    year: { $year: "$createdAt" },
+                    month: { $month: "$createdAt" },
+                    day: { $dayOfMonth: "$createdAt" }
+                },
+                count: { $sum: 1 }
+            }
+        },
+        { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 } }
+    ]);
+
+    const result = [];
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const day = d.getDate();
+        const month = d.getMonth() + 1;
+        const year = d.getFullYear();
+
+        const dayPoint = growthData.find(g => g._id.day === day && g._id.month === month && g._id.year === year);
+        result.push({
+            label: d.toLocaleDateString('en-US', { weekday: 'short' }),
+            count: dayPoint ? dayPoint.count : 0
+        });
+    }
+    return result;
+};
+
 /**
  * @desc Get all students enrolled in courses taught by the logged-in mentor
  */
 export const getMentorStudents = catchAsync(async (req, res, next) => {
     const instructorId = req.user._id;
+    const { search, page = 1, limit = 10 } = req.query;
 
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    const query = { instructor: instructorId };
+    let query = { instructor: instructorId };
 
-    // Search by candidate name or email (needs population or aggregation)
-    // For now, simple fetch with population
+    if (search) {
+        const searchRegex = new RegExp(search, 'i');
+
+        // 1. Find matching candidates
+        const matchingCandidates = await mongoose.model('User').find({
+            $or: [
+                { firstName: searchRegex },
+                { lastName: searchRegex },
+                { email: searchRegex }
+            ]
+        }).select('_id');
+
+        // 2. Find matching courses
+        const matchingCourses = await Course.find({
+            title: searchRegex
+        }).select('_id');
+
+        const candidateIds = matchingCandidates.map(c => c._id);
+        const courseIds = matchingCourses.map(c => c._id);
+
+        // 3. Construct OR query for enrollment matching
+        const searchCriteria = [];
+        if (candidateIds.length > 0) searchCriteria.push({ candidate: { $in: candidateIds } });
+        if (courseIds.length > 0) searchCriteria.push({ course: { $in: courseIds } });
+
+        if (searchCriteria.length > 0) {
+            query.$or = searchCriteria;
+        } else {
+            // If there's a search term but no candidates or courses match, 
+            // ensure the query returns nothing for this mentor.
+            query._id = new mongoose.Types.ObjectId();
+        }
+    }
+
     const total = await Enrollment.countDocuments(query);
     const enrollments = await Enrollment.find(query)
         .populate("candidate", "firstName lastName email avatar")
         .populate("course", "title category thumbnail")
         .sort("-createdAt")
         .skip(skip)
-        .limit(limit);
+        .limit(parseInt(limit));
 
     res.status(httpStatus.SUCCESS).json({
         status: 'success',
         results: enrollments.length,
         pagination: {
             total,
-            page,
-            limit,
-            pages: Math.ceil(total / limit)
+            page: parseInt(page),
+            limit: parseInt(limit),
+            pages: Math.ceil(total / parseInt(limit))
         },
         data: {
             enrollments
@@ -60,9 +183,12 @@ export const getMentorStudents = catchAsync(async (req, res, next) => {
  */
 export const getMentorStudentStats = catchAsync(async (req, res, next) => {
     const instructorId = req.user._id;
+    const { status } = req.query;
+
+    const baseMatch = { instructor: instructorId };
 
     const statsData = await Enrollment.aggregate([
-        { $match: { instructor: instructorId } },
+        { $match: baseMatch },
         {
             $group: {
                 _id: null,
@@ -78,6 +204,14 @@ export const getMentorStudentStats = catchAsync(async (req, res, next) => {
         }
     ]);
 
+    const growthQuery = { ...baseMatch };
+    if (status && status !== 'All') {
+        growthQuery.status = status;
+    }
+
+    const growth = await getGrowthAggregation(growthQuery);
+    const dailyGrowth = await getDailyGrowthAggregation(growthQuery);
+
     const stats = statsData.length > 0 ? statsData[0] : {
         totalStudents: 0,
         activeStudents: 0,
@@ -91,7 +225,9 @@ export const getMentorStudentStats = catchAsync(async (req, res, next) => {
             totalStudents: stats.totalStudents,
             activeStudents: stats.activeStudents,
             completedStudents: stats.completedStudents,
-            avgProgress: parseFloat(stats.avgProgress || 0).toFixed(1)
+            avgProgress: parseFloat(stats.avgProgress || 0).toFixed(1),
+            growth,
+            dailyGrowth
         }
     });
 });
@@ -133,6 +269,8 @@ export const getAllStudents = catchAsync(async (req, res, next) => {
  * @desc Get global stats for all students (Superuser/Admin)
  */
 export const getAllStudentStats = catchAsync(async (req, res, next) => {
+    const { status } = req.query;
+
     const statsData = await Enrollment.aggregate([
         {
             $group: {
@@ -149,6 +287,14 @@ export const getAllStudentStats = catchAsync(async (req, res, next) => {
         }
     ]);
 
+    const growthQuery = {};
+    if (status && status !== 'All') {
+        growthQuery.status = status;
+    }
+
+    const growth = await getGrowthAggregation(growthQuery);
+    const dailyGrowth = await getDailyGrowthAggregation(growthQuery);
+
     const stats = statsData.length > 0 ? statsData[0] : {
         totalStudents: 0,
         activeStudents: 0,
@@ -162,7 +308,9 @@ export const getAllStudentStats = catchAsync(async (req, res, next) => {
             totalStudents: stats.totalStudents,
             activeStudents: stats.activeStudents,
             completedStudents: stats.completedStudents,
-            avgProgress: parseFloat(stats.avgProgress || 0).toFixed(1)
+            avgProgress: parseFloat(stats.avgProgress || 0).toFixed(1),
+            growth,
+            dailyGrowth
         }
     });
 });
@@ -174,156 +322,199 @@ export const enrollInCourse = catchAsync(async (req, res, next) => {
     const { courseId, couponCode } = req.body;
     const candidateId = req.user._id;
 
-    // 1. Check if course exists and is published
-    const course = await Course.findById(courseId).populate('instructor', 'email firstName lastName');
-    if (!course || course.status !== 'published') {
-        return next(new AppError('Course not found or not available for enrollment', httpStatus.NOT_FOUND));
-    }
 
-    // 2. Check if already enrolled
-    const existingEnrollment = await Enrollment.findOne({ candidate: candidateId, course: courseId });
-    if (existingEnrollment) {
-        return next(new AppError('You are already enrolled in this course', httpStatus.BAD_REQUEST));
-    }
 
-    // 3. Handle Coupon if provided
-    let coupon = null;
-    if (couponCode) {
-        coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), status: 'active' });
-        if (!coupon) return next(new AppError("Invalid or expired coupon code", httpStatus.NOT_FOUND));
-        if (coupon.expiryDate && coupon.expiryDate < new Date()) return next(new AppError("This coupon has expired", httpStatus.BAD_REQUEST));
-        if (coupon.usageLimit && coupon.usageCount >= coupon.usageLimit) return next(new AppError("This coupon has reached its maximum usage limit", httpStatus.BAD_REQUEST));
-        if (coupon.usageLimitPerUser) {
-        if (coupon.usageLimitPerUser) {
-            // Smart Usage Counting: Group transactions by "Time Clouds" (2-second windows)
-            // This counts any transactions created in the same loop/bundle as ONE use.
-            const userTransactions = await Transaction.find({
-                candidate: candidateId,
-                couponCode: coupon.code,
-                status: { $ne: 'failed' }
-            }).sort('createdAt').select('createdAt');
+        // 1. Check if course exists and is published
+        const course = await Course.findById(courseId).populate('instructor', 'email firstName lastName');
+        if (!course || course.status !== 'published') {
 
-            if (userTransactions.length > 0) {
-                let uniquePurchaseEvents = 0;
-                let lastTxTime = 0;
+            return next(new AppError('Course not found or not available for enrollment', httpStatus.NOT_FOUND));
+        }
 
-                userTransactions.forEach(tx => {
-                    const currentTime = new Date(tx.createdAt).getTime();
-                    // If this transaction is more than 2 seconds after the last one, it's a new "Use"
-                    if (currentTime - lastTxTime > 2000) {
-                        uniquePurchaseEvents++;
-                        lastTxTime = currentTime;
-                    }
-                });
+        // 2. Check if already enrolled
+        // ✅ AFTER
+        const existingEnrollment = await Enrollment.findOne({ candidate: candidateId, course: courseId });
 
-                if (uniquePurchaseEvents >= coupon.usageLimitPerUser) {
+        if (existingEnrollment) {
+            if (['active', 'completed'].includes(existingEnrollment.status)) {
+                return next(new AppError('You are already enrolled in this course', httpStatus.BAD_REQUEST));
+            }
+
+            // Stale pending/dropped record from a previous failed payment — clean it up
+            // so the candidate can try again fresh
+            await Enrollment.deleteOne({ _id: existingEnrollment._id });
+
+            // Also delete the associated failed/pending transaction so there's no orphaned record
+            await Transaction.deleteOne({ enrollment: existingEnrollment._id, status: { $in: ['pending', 'failed'] } });
+        }
+
+        // 3. Handle Coupon if provided
+        let coupon = null;
+        if (couponCode) {
+            const couponValidation = await validateCouponForUse(couponCode, candidateId);
+
+            if (!couponValidation.valid) {
+
+                if (couponValidation.error === 'expired') {
+                    return next(new AppError("This coupon has expired", httpStatus.BAD_REQUEST));
+                }
+                if (couponValidation.error === 'exhausted') {
+                    return next(new AppError("This coupon has reached its maximum usage limit", httpStatus.BAD_REQUEST));
+                }
+                if (couponValidation.error === 'user_limit_reached') {
                     return next(new AppError("You have already used this coupon the maximum number of times", httpStatus.BAD_REQUEST));
+                }
+                return next(new AppError("Invalid or expired coupon code", httpStatus.NOT_FOUND));
+            }
+
+            coupon = couponValidation.coupon;
+
+            if (coupon.usageLimit) {
+                const updatedCoupon = await Coupon.findOneAndUpdate(
+                    { code: coupon.code, usageLimit: { $gt: coupon.usageCount } },
+                    { $inc: { usageCount: 1 } },
+                    { new: true }
+                );
+                if (!updatedCoupon) {
+
+                    return next(new AppError("This coupon has reached its maximum usage limit", httpStatus.BAD_REQUEST));
+                }
+                coupon = updatedCoupon;
+            }
+
+            if (coupon.usageLimitPerUser) {
+                const userTransactions = await Transaction.find({
+                    candidate: candidateId,
+                    couponCode: coupon.code,
+                    status: { $ne: 'failed' }
+                }).sort('createdAt').select('createdAt');
+
+                if (userTransactions.length > 0) {
+                    let uniquePurchaseEvents = 0;
+                    let lastTxTime = 0;
+
+                    userTransactions.forEach(tx => {
+                        const currentTime = new Date(tx.createdAt).getTime();
+                        if (currentTime - lastTxTime > 2000) {
+                            uniquePurchaseEvents++;
+                            lastTxTime = currentTime;
+                        }
+                    });
+
+                    if (uniquePurchaseEvents >= coupon.usageLimitPerUser) {
+
+                        return next(new AppError("You have already used this coupon the maximum number of times", httpStatus.BAD_REQUEST));
+                    }
                 }
             }
         }
-        }
-    }
 
-    let finalPrice = course.price;
-    let appliedDiscount = 0;
-    if (coupon) {
-        let isApplicable = true;
-        if (!(coupon.applicableTo === 'all' || coupon.applicableTo === 'courses')) isApplicable = false;
-        if (isApplicable && coupon.instructor && coupon.instructor.toString() !== course.instructor.toString()) isApplicable = false;
-        if (isApplicable && coupon.specificItems?.length > 0 && !coupon.specificItems.some(id => id.toString() === courseId.toString())) isApplicable = false;
+        let finalPrice = course.price;
+        let appliedDiscount = 0;
+        if (coupon) {
+            let isApplicable = true;
+            if (!(coupon.applicableTo === 'all' || coupon.applicableTo === 'courses')) isApplicable = false;
+            if (isApplicable && coupon.instructor && coupon.instructor.toString() !== course.instructor.toString()) isApplicable = false;
+            if (isApplicable && coupon.specificItems?.length > 0 && !coupon.specificItems.some(id => id.toString() === courseId.toString())) isApplicable = false;
 
-        if (isApplicable) {
-            if (coupon.discountType === 'percentage') {
-                appliedDiscount = (course.price * coupon.discountValue) / 100;
-                if (coupon.maxDiscount && appliedDiscount > coupon.maxDiscount) appliedDiscount = coupon.maxDiscount;
-            } else {
-                appliedDiscount = Math.min(coupon.discountValue, course.price);
+            if (isApplicable) {
+                if (coupon.discountType === 'percentage') {
+                    appliedDiscount = (course.price * coupon.discountValue) / 100;
+                    if (coupon.maxDiscount && appliedDiscount > coupon.maxDiscount) appliedDiscount = coupon.maxDiscount;
+                } else {
+                    appliedDiscount = Math.min(coupon.discountValue, course.price);
+                }
+                finalPrice = Math.max(0, course.price - appliedDiscount);
+            } else if (couponCode) {
+
+                return next(new AppError("This coupon is not applicable to this course", httpStatus.BAD_REQUEST));
             }
-            finalPrice = Math.max(0, course.price - appliedDiscount);
-        } else if (couponCode) {
-             return next(new AppError("This coupon is not applicable to this course", httpStatus.BAD_REQUEST));
         }
-    }
 
-    // 4. Create enrollment
-    // Initialize certification tracking based on course settings
-    const enrollment = await Enrollment.create({
-        candidate: candidateId,
-        course: courseId,
-        instructor: course.instructor,
-        progress: 0,
-        status: 'active',
-        certificationTracking: {
-            mcqStatus: course.certification?.mcqEnabled ? 'pending' : 'na',
-            projectStatus: course.certification?.projectEnabled ? 'pending' : 'na',
-            isCertified: false
+        // 4. Create enrollment & Transaction within a session for atomicity
+        const { enrollment, transaction, enrollmentStatus } = await runTransaction(async (session) => {
+            const enrollmentStatus = finalPrice > 0 ? 'pending' : 'active';
+            const [enrollment] = await Enrollment.create([{
+                candidate: candidateId,
+                course: courseId,
+                instructor: course.instructor,
+                progress: 0,
+                status: enrollmentStatus,
+                certificationTracking: {
+                    mcqStatus: course.certification?.mcqEnabled ? 'pending' : 'na',
+                    projectStatus: course.certification?.projectEnabled ? 'pending' : 'na',
+                    isCertified: false
+                }
+            }], { session });
+
+            // 4.1 Create Transaction only if there's an actual payment
+            let transaction = null;
+            if (finalPrice > 0) {
+                [transaction] = await Transaction.create([{
+                    enrollment: enrollment._id,
+                    candidate: candidateId,
+                    course: courseId,
+                    instructor: course.instructor._id,
+                    amount: finalPrice,
+                    discount: course.price - finalPrice,
+                    couponCode: coupon ? coupon.code : undefined,
+                    status: 'pending',
+                    billingDetails: {
+                        name: `${req.user.firstName} ${req.user.lastName}`,
+                        email: req.user.email
+                    }
+                }], { session });
+            }
+
+            // 5. Increment course enrollment count
+            await Course.findByIdAndUpdate(course._id, { $inc: { enrollmentCount: 1 } }, { session });
+
+            return { enrollment, transaction, enrollmentStatus };
+        });
+
+        // 6. Post-transaction activities (Logging & Notifications)
+        // 6.1 Log activity
+        await logActivity({
+            userId: candidateId,
+            userRole: 'candidate',
+            action: 'ENROLL',
+            resource: 'COURSE',
+            resourceId: courseId,
+            details: { courseTitle: course.title, amount: course.price, discountedAmount: finalPrice, status: enrollmentStatus }
+        }, req);
+
+        // 6.2 Fire Database Notifications if the enrollment is instantly fulfilled (free)
+        if (finalPrice === 0) {
+            // Notify Candidate
+            await sendNotification(Notification, {
+                userId: candidateId,
+                type: 'success',
+                title: 'Enrollment Successful!',
+                message: `You have successfully enrolled in ${course.title}. Happy Learning!`,
+                link: '/candidate/courses'
+            });
+
+            // Notify Mentor
+            if (course.instructor?._id) {
+                await sendNotification(Notification, {
+                    userId: course.instructor._id,
+                    type: 'info',
+                    title: 'New Student!',
+                    message: `${req.user.firstName} ${req.user.lastName} just enrolled in ${course.title}.`,
+                    link: '/mentor/students'
+                });
+            }
         }
-    });
 
-    // 4.1 Create Transaction if course is paid
-    let transaction = null;
-    if (finalPrice > 0 || (course.price > 0 && finalPrice === 0)) {
-        transaction = await Transaction.create({
-            enrollment: enrollment._id,
-            candidate: candidateId,
-            course: courseId,
-            instructor: course.instructor._id,
-            amount: finalPrice,
-            discount: course.price - finalPrice,
-            couponCode: coupon ? coupon.code : undefined,
-            billingDetails: {
-                name: `${req.user.firstName} ${req.user.lastName}`,
-                email: req.user.email
+        // Return success response
+        return res.status(httpStatus.CREATED).json({
+            status: 'success',
+            data: {
+                enrollment,
+                transaction,
+                requiresPayment: finalPrice > 0
             }
         });
-    }
-
-    // 5. Increment counts
-    course.enrollmentCount += 1;
-    await course.save();
-
-    if (coupon && appliedDiscount > 0) {
-        coupon.usageCount += 1;
-        await coupon.save();
-    }
-
-    // 6. Log activity
-    await logActivity({
-        userId: candidateId,
-        userRole: 'candidate',
-        action: 'ENROLL',
-        resource: 'COURSE',
-        resourceId: courseId,
-        details: { courseTitle: course.title, amount: course.price, discountedAmount: finalPrice }
-    }, req);
-
-    res.status(httpStatus.CREATED).json({
-        status: 'success',
-        data: {
-            enrollment
-        }
-    });
-
-    // Send Enrollment Email in background
-    if (req.user.notificationSettings?.emailAlerts) {
-        new Email(req.user).sendEnrollmentConfirmation(
-            course.title, 
-            transaction?.invoiceNumber, 
-            transaction?.amount
-        ).catch(err => {
-            console.error("Enrollment email failed:", err);
-        });
-    }
-
-    // Notify Instructor in background
-    if (course.instructor?.email) {
-        new Email(course.instructor).sendMentorEnrollmentNotification(
-            `${req.user.firstName} ${req.user.lastName}`, 
-            course.title
-        ).catch(err => {
-            console.error("Mentor notification email failed:", err);
-        });
-    }
 });
 
 /**
@@ -364,6 +555,10 @@ export const updateProgress = catchAsync(async (req, res, next) => {
     const course = await Course.findById(courseId);
     const totalLessons = course.syllabus.length;
 
+    if (totalLessons === 0) {
+        return next(new AppError('Course has no lessons', httpStatus.BAD_REQUEST));
+    }
+
     // 3. Update completedLessons array
     let completedSet = new Set(enrollment.completedLessons || []);
     if (completed) {
@@ -371,11 +566,11 @@ export const updateProgress = catchAsync(async (req, res, next) => {
     } else {
         completedSet.delete(lessonIdx);
     }
-    
+
     enrollment.completedLessons = Array.from(completedSet);
 
     // 4. Calculate progress percentage
-    enrollment.progress = Math.round((enrollment.completedLessons.length / totalLessons) * 100);
+    enrollment.progress = Math.round((enrollment.completedLessons.length / (totalLessons || 1)) * 100);
 
     // 5. Update status if finished
     if (enrollment.progress === 100 && enrollment.status !== 'completed') {
@@ -414,6 +609,23 @@ export const submitCertificationExam = catchAsync(async (req, res, next) => {
         return next(new AppError('Certification MCQ is not enabled for this course', httpStatus.BAD_REQUEST));
     }
 
+    if (enrollment.certificationTracking.mcqStatus === 'passed') {
+        return next(new AppError('You have already passed the MCQ exam', httpStatus.BAD_REQUEST));
+    }
+
+    const maxAttempts = enrollment.course.certification.mcqMaxAttempts || 3;
+    if (enrollment.certificationTracking.mcqAttempts >= maxAttempts) {
+        return next(new AppError(`Maximum ${maxAttempts} attempts reached`, httpStatus.BAD_REQUEST));
+    }
+
+    const cooldownHours = enrollment.course.certification.mcqCooldownHours || 24;
+    if (enrollment.certificationTracking.lastAttemptAt) {
+        const hoursSinceLastAttempt = (Date.now() - new Date(enrollment.certificationTracking.lastAttemptAt).getTime()) / (1000 * 60 * 60);
+        if (hoursSinceLastAttempt < cooldownHours) {
+            return next(new AppError(`Please wait ${Math.ceil(cooldownHours - hoursSinceLastAttempt)} hours before retaking`, httpStatus.BAD_REQUEST));
+        }
+    }
+
     const questions = enrollment.course.certification.questions;
     let score = 0;
     questions.forEach((q, idx) => {
@@ -425,6 +637,8 @@ export const submitCertificationExam = catchAsync(async (req, res, next) => {
 
     enrollment.certificationTracking.mcqScore = percent;
     enrollment.certificationTracking.mcqStatus = percent >= passingScore ? 'passed' : 'failed';
+    enrollment.certificationTracking.mcqAttempts = (enrollment.certificationTracking.mcqAttempts || 0) + 1;
+    enrollment.certificationTracking.lastAttemptAt = Date.now();
 
     // Check if fully certified now
     const isProjectDone = enrollment.certificationTracking.projectStatus === 'na' || enrollment.certificationTracking.projectStatus === 'approved';
@@ -436,19 +650,23 @@ export const submitCertificationExam = catchAsync(async (req, res, next) => {
 
     await enrollment.save();
 
+    const remainingAttempts = maxAttempts - enrollment.certificationTracking.mcqAttempts;
+
     res.status(httpStatus.SUCCESS).json({
         status: 'success',
         data: {
             score: percent,
             passed: percent >= passingScore,
-            isCertified: enrollment.certificationTracking.isCertified
+            isCertified: enrollment.certificationTracking.isCertified,
+            remainingAttempts,
+            attemptsUsed: enrollment.certificationTracking.mcqAttempts
         }
     });
 
     // Send Certification Email if just earned
     if (enrollment.certificationTracking.isCertified && req.user.notificationSettings?.emailAlerts) {
         new Email(req.user).sendCertificationEmail(
-            enrollment.course.title, 
+            enrollment.course.title,
             enrollment.certificationTracking.certificateId
         ).catch(err => {
             console.error("Certification email failed:", err);
@@ -518,7 +736,7 @@ export const reviewCapstoneProject = catchAsync(async (req, res, next) => {
         const EnrollmentWithUser = await Enrollment.findById(enrollmentId).populate('candidate').populate('course');
         if (EnrollmentWithUser.candidate?.notificationSettings?.emailAlerts) {
             new Email(EnrollmentWithUser.candidate).sendCertificationEmail(
-                EnrollmentWithUser.course.title, 
+                EnrollmentWithUser.course.title,
                 enrollment.certificationTracking.certificateId
             ).catch(err => {
                 console.error("Certification email failed (Review process):", err);
@@ -549,7 +767,7 @@ export const rateCourse = catchAsync(async (req, res, next) => {
     // 3. Recalculate course average rating
     const allRatings = await Enrollment.find({ course: courseId, rating: { $exists: true } }, 'rating');
     const avgRating = allRatings.length > 0
-        ? (allRatings.reduce((acc, curr) => acc + curr.rating, 0) / allRatings.length)
+        ? (allRatings.reduce((acc, curr) => acc + curr.rating, 0) / (allRatings.length || 1))
         : 0;
 
     await Course.findByIdAndUpdate(courseId, { averageRating: avgRating });
@@ -583,9 +801,9 @@ export const getMentorReviews = catchAsync(async (req, res, next) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const query = { 
-        instructor: instructorId, 
-        rating: { $exists: true } 
+    const query = {
+        instructor: instructorId,
+        rating: { $exists: true }
     };
 
     const total = await Enrollment.countDocuments(query);
@@ -603,17 +821,17 @@ export const getMentorReviews = catchAsync(async (req, res, next) => {
     // Get summary stats for the entire pool (not just the page)
     const statsData = await Enrollment.aggregate([
         { $match: query },
-        { 
-            $group: { 
-                _id: null, 
+        {
+            $group: {
+                _id: null,
                 avgRating: { $avg: "$rating" },
-                fiveStarCount: { 
-                    $sum: { $cond: [{ $eq: ["$rating", 5] }, 1, 0] } 
+                fiveStarCount: {
+                    $sum: { $cond: [{ $eq: ["$rating", 5] }, 1, 0] }
                 },
                 monthlyCount: {
                     $sum: { $cond: [{ $gte: ["$ratedAt", firstDayOfMonth] }, 1, 0] }
                 }
-            } 
+            }
         }
     ]);
 
@@ -710,136 +928,130 @@ export const enrollBatch = catchAsync(async (req, res, next) => {
             }
 
             let isApplicable = false;
-            let potential = 0;
 
             if (coupon) {
                 isApplicable = true;
-                // Type Check
+                // Type Check - Courses only
                 if (!(coupon.applicableTo === 'all' || coupon.applicableTo === 'courses')) isApplicable = false;
                 // Instructor Check
                 if (isApplicable && coupon.instructor && coupon.instructor.toString() !== course.instructor.toString()) isApplicable = false;
                 // Specific Items Check
                 if (isApplicable && coupon.specificItems?.length > 0 && !coupon.specificItems.some(item => item.toString() === id.toString())) isApplicable = false;
-
-                if (isApplicable) {
-                    if (coupon.discountType === 'percentage') {
-                        potential = (course.price * coupon.discountValue) / 100;
-                    } else {
-                        potential = course.price; // For fixed pool, we weigh by price
-                    }
-                }
             }
 
-            itemsToProcess.push({ course, isApplicable, potential });
-            totalPotentialDiscount += potential;
+            itemsToProcess.push({ course, isApplicable });
         } catch (err) {
             errors.push({ courseId: id, message: `Validation error: ${err.message}` });
         }
     }
 
-    // 2. Calculate the global discount ratio (cap enforcement)
-    let discountRatio = 1;
-    if (coupon && totalPotentialDiscount > 0) {
+    // 2. Calculate the global discount pool the entire batch is eligible for
+    let totalGlobalDiscount = 0;
+    const applicableItems = itemsToProcess.filter(i => i.isApplicable);
+    const totalApplicablePrice = applicableItems.reduce((sum, item) => sum + item.course.price, 0);
+
+    if (coupon && totalApplicablePrice > 0) {
         if (coupon.discountType === 'percentage') {
-            // Apply maxDiscount cap to the total potential pool
-            let finalTotalDiscount = totalPotentialDiscount;
-            if (coupon.maxDiscount && finalTotalDiscount > coupon.maxDiscount) {
-                finalTotalDiscount = coupon.maxDiscount;
+            totalGlobalDiscount = (totalApplicablePrice * coupon.discountValue) / 100;
+            if (coupon.maxDiscount && totalGlobalDiscount > coupon.maxDiscount) {
+                totalGlobalDiscount = coupon.maxDiscount;
             }
-            discountRatio = finalTotalDiscount / totalPotentialDiscount;
         } else {
-            // For Fixed coupons, distribute the fixed value proportionally across the applicable items
-            const totalFixedToGive = Math.min(coupon.discountValue, totalPotentialDiscount);
-            discountRatio = totalFixedToGive / totalPotentialDiscount;
+            // For Fixed coupons, total discount is limited by the fixed value or the total price
+            totalGlobalDiscount = Math.min(coupon.discountValue, totalApplicablePrice);
         }
     }
 
-    // 3. Process the Actual Enrollments and Transactions
-    for (const item of itemsToProcess) {
-        const { course, isApplicable, potential } = item;
-        try {
-            // 3.1 Create enrollment
-            const enrollment = await Enrollment.create({
-                candidate: candidateId,
-                course: course._id,
-                instructor: course.instructor,
-                progress: 0,
-                status: 'active',
-                certificationTracking: {
-                    mcqStatus: course.certification?.mcqEnabled ? 'pending' : 'na',
-                    projectStatus: course.certification?.projectEnabled ? 'pending' : 'na',
-                    isCertified: false
+    // 3. Calculate a distribution ratio to apply the global discount across applicable items
+    const discountRatio = totalApplicablePrice > 0 ? (totalGlobalDiscount / totalApplicablePrice) : 0;
+
+    // 4. Create enrollments & Transactions within a session for atomicity
+    await runTransaction(async (session) => {
+        for (const item of itemsToProcess) {
+            const { course, isApplicable } = item;
+            try {
+                // 4.1 Calculate final price for this item using the global discount ratio
+                let appliedDiscount = 0;
+                if (isApplicable) {
+                    appliedDiscount = course.price * discountRatio;
+                    if (appliedDiscount > 0) couponActuallyUsed = true;
                 }
-            });
+                const finalPrice = Math.max(0, course.price - appliedDiscount);
+                const enrollmentStatus = finalPrice > 0 ? 'pending' : 'active';
 
-            // 3.2 Calculate final price for this item
-            let appliedDiscount = 0;
-            if (isApplicable) {
-                appliedDiscount = potential * discountRatio;
-                if (appliedDiscount > 0) couponActuallyUsed = true;
-            }
-            const finalPrice = Math.max(0, course.price - appliedDiscount);
-
-            // 3.3 Create Transaction
-            if (finalPrice > 0 || (course.price > 0 && finalPrice === 0)) {
-                totalPaidBatch += finalPrice;
-                await Transaction.create({
-                    enrollment: enrollment._id,
+                const [enrollment] = await Enrollment.create([{
                     candidate: candidateId,
                     course: course._id,
                     instructor: course.instructor,
-                    amount: parseFloat(finalPrice.toFixed(2)),
-                    discount: parseFloat((course.price - finalPrice).toFixed(2)),
-                    couponCode: (isApplicable && appliedDiscount > 0) ? coupon.code : undefined,
-                    billingDetails: {
-                        name: `${req.user.firstName || 'User'} ${req.user.lastName || ''}`,
-                        email: req.user.email
+                    progress: 0,
+                    status: enrollmentStatus,
+                    certificationTracking: {
+                        mcqStatus: course.certification?.mcqEnabled ? 'pending' : 'na',
+                        projectStatus: course.certification?.projectEnabled ? 'pending' : 'na',
+                        isCertified: false
                     }
-                });
+                }], { session });
+
+                // 4.2 Create Transaction
+                if (finalPrice > 0 || (course.price > 0 && finalPrice === 0)) {
+                    totalPaidBatch += finalPrice;
+                    await Transaction.create([{
+                        enrollment: enrollment._id,
+                        candidate: candidateId,
+                        course: course._id,
+                        instructor: course.instructor,
+                        amount: parseFloat(finalPrice.toFixed(2)),
+                        discount: parseFloat((course.price - finalPrice).toFixed(2)),
+                        couponCode: (isApplicable && appliedDiscount > 0) ? coupon.code : undefined,
+                        billingDetails: {
+                            name: `${req.user.firstName || 'User'} ${req.user.lastName || ''}`,
+                            email: req.user.email
+                        }
+                    }], { session });
+                }
+
+                // 4.3 Increment counts
+                await Course.findByIdAndUpdate(course._id, { $inc: { enrollmentCount: 1 } }, { session });
+
+                // 4.4 Log activity
+                await logActivity({
+                    userId: candidateId,
+                    userRole: 'candidate',
+                    action: 'ENROLL',
+                    resource: 'COURSE',
+                    resourceId: course._id,
+                    details: { courseTitle: course.title, amount: course.price, batch: true }
+                }, req);
+
+                results.push({ courseId: course._id, status: 'success' });
+                successfulCourseTitles.push(course.title);
+            } catch (err) {
+                // For a true atomic batch, we fail the entire transaction if any one item has a DB error
+                throw err;
             }
-
-            // 3.4 Increment counts
-            course.enrollmentCount += 1;
-            await course.save();
-
-            // 3.5 Log activity
-            await logActivity({
-                userId: candidateId,
-                userRole: 'candidate',
-                action: 'ENROLL',
-                resource: 'COURSE',
-                resourceId: course._id,
-                details: { courseTitle: course.title, amount: course.price, batch: true }
-            }, req);
-
-            results.push({ courseId: course._id, status: 'success' });
-            successfulCourseTitles.push(course.title);
-        } catch (err) {
-            console.error(`[EnrollBatch] Processing failed for ${course._id}:`, err);
-            errors.push({ courseId: course._id, message: err.message });
         }
-    }
 
-    // Increment coupon usage count once for the entire batch if any discount was applied
-    if (coupon && couponActuallyUsed && results.length > 0) {
-        coupon.usageCount += 1;
-        await coupon.save();
-    }
-
-    res.status(httpStatus.SUCCESS).json({
-        status: 'success',
-        data: {
-            processed: results.length,
-            failed: errors.length,
-            results,
-            errors
+        // Increment coupon usage count once for the entire batch if any discount was applied
+        if (coupon && couponActuallyUsed && results.length > 0) {
+            coupon.usageCount += 1;
+            await coupon.save({ session });
         }
+
+        res.status(httpStatus.SUCCESS).json({
+            status: 'success',
+            data: {
+                processed: results.length,
+                failed: errors.length,
+                results,
+                errors
+            }
+        });
     });
 
     // Send Batch Enrollment Email in background
     if (successfulCourseTitles.length > 0 && req.user.notificationSettings?.emailAlerts) {
         new Email(req.user).sendBatchEnrollmentConfirmation(
-            successfulCourseTitles, 
+            successfulCourseTitles,
             totalPaidBatch.toFixed(2)
         ).catch(err => {
             console.error("Batch enrollment email failed:", err);
@@ -897,7 +1109,6 @@ export const enrollBundle = catchAsync(async (req, res, next) => {
         if (coupon.expiryDate && coupon.expiryDate < new Date()) return next(new AppError("This coupon has expired", httpStatus.BAD_REQUEST));
         if (coupon.usageLimit && coupon.usageCount >= coupon.usageLimit) return next(new AppError("This coupon has reached its maximum usage limit", httpStatus.BAD_REQUEST));
         if (coupon.usageLimitPerUser) {
-        if (coupon.usageLimitPerUser) {
             // Smart Usage Counting: Group transactions by "Time Clouds" (2-second windows)
             // This counts any transactions created in the same loop/bundle as ONE use.
             const userTransactions = await Transaction.find({
@@ -924,7 +1135,7 @@ export const enrollBundle = catchAsync(async (req, res, next) => {
                 }
             }
         }
-        }
+
     }
 
     let finalBundlePrice = bundle.price;
@@ -950,8 +1161,8 @@ export const enrollBundle = catchAsync(async (req, res, next) => {
 
     // 3. Prorate the final bundle price across all the courses inside it
     const courseCount = bundle.courses.length;
-    const proratedAmount = parseFloat((finalBundlePrice / courseCount).toFixed(2));
-    const proratedDiscount = parseFloat((appliedDiscount / courseCount).toFixed(2));
+    const proratedAmount = parseFloat((finalBundlePrice / (courseCount || 1)).toFixed(2));
+    const proratedDiscount = parseFloat((appliedDiscount / (courseCount || 1)).toFixed(2));
 
     const results = [];
     const errors = [];
@@ -960,112 +1171,109 @@ export const enrollBundle = catchAsync(async (req, res, next) => {
 
     // We generate a "Shared Payment ID" for all courses in this bundle purchase.
     // This allows accurate coupon-usage tracking (counting this bundle as ONE use).
-    const sharedPaymentId = `pay_${Math.random().toString(36).substr(2, 9)}`;
+    const sharedPaymentId = `pay_${crypto.randomBytes(8).toString('hex')}`;
 
-    // Process each course in the bundle
-    for (const course of bundle.courses) {
-        try {
-            if (course.status !== 'published') {
-                errors.push({ courseId: course._id, message: 'Course is not currently published' });
-                continue;
-            }
-
-            // Check if already enrolled
-            const existingEnrollment = await Enrollment.findOne({ candidate: candidateId, course: course._id });
-            if (existingEnrollment) {
-                // We'll mark it as a harmless skip rather than a critical error
-                errors.push({ courseId: course._id, message: 'Already enrolled' });
-                continue;
-            }
-
-            // Create enrollment
-            const enrollment = await Enrollment.create({
-                candidate: candidateId,
-                course: course._id,
-                instructor: course.instructor,
-                progress: 0,
-                status: 'active',
-                certificationTracking: {
-                    mcqStatus: course.certification?.mcqEnabled ? 'pending' : 'na',
-                    projectStatus: course.certification?.projectEnabled ? 'pending' : 'na',
-                    isCertified: false
+    // 4. Create enrollments & Transactions within a session for atomicity
+    await runTransaction(async (session) => {
+        // Process each course in the bundle
+        for (const course of bundle.courses) {
+            try {
+                if (course.status !== 'published') {
+                    errors.push({ courseId: course._id, message: 'Course is not currently published' });
+                    continue;
                 }
-            });
 
-            // Create prorated Transaction for the instructor
-            if (proratedAmount > 0) {
-                try {
+                // Check if already enrolled
+                const existingEnrollment = await Enrollment.findOne({ candidate: candidateId, course: course._id });
+                if (existingEnrollment) {
+                    errors.push({ courseId: course._id, message: 'Already enrolled' });
+                    continue;
+                }
+
+                // Create enrollment
+                const enrollmentStatus = proratedAmount > 0 ? 'pending' : 'active';
+                const [enrollment] = await Enrollment.create([{
+                    candidate: candidateId,
+                    course: course._id,
+                    instructor: course.instructor,
+                    progress: 0,
+                    status: enrollmentStatus,
+                    certificationTracking: {
+                        mcqStatus: course.certification?.mcqEnabled ? 'pending' : 'na',
+                        projectStatus: course.certification?.projectEnabled ? 'pending' : 'na',
+                        isCertified: false
+                    }
+                }], { session });
+
+                // Create prorated Transaction for the instructor
+                if (proratedAmount > 0) {
                     totalPaidBundle += proratedAmount;
-                    await Transaction.create({
+                    await Transaction.create([{
                         enrollment: enrollment._id,
                         candidate: candidateId,
                         course: course._id,
-                        bundle: bundle._id, // Group line-items by bundle
-                        instructor: course.instructor, 
+                        bundle: bundle._id,
+                        instructor: course.instructor,
                         amount: proratedAmount,
                         discount: proratedDiscount,
-                        paymentId: sharedPaymentId, // One checkout ID for all courses in this bundle
+                        paymentId: sharedPaymentId,
                         couponCode: coupon ? coupon.code : undefined,
                         billingDetails: {
                             name: `${req.user.firstName || 'User'} ${req.user.lastName || ''}`,
                             email: req.user.email
                         }
-                    });
-                } catch (txErr) {
-                    console.error(`[EnrollBundle] TRANSACTION FAILED for course ${course._id}:`, txErr);
-                    errors.push({ courseId: course._id, message: `Transaction failed: ${txErr.message}` });
-                    continue; // Skip the rest of analytics increments if tx failed? Usually it's fine
+                    }], { session });
                 }
+
+                // Increment course enrollment count
+                await Course.findByIdAndUpdate(course._id, { $inc: { enrollmentCount: 1 } }, { session });
+
+                // Log activity
+                await logActivity({
+                    userId: candidateId,
+                    userRole: 'candidate',
+                    action: 'ENROLL',
+                    resource: 'BUNDLE',
+                    resourceId: bundleId,
+                    details: { bundleTitle: bundle.title, courseEnrolled: course.title, proratedAmount }
+                }, req);
+
+                results.push({ courseId: course._id, title: course.title, status: 'success' });
+                successfulCourseTitles.push(course.title);
+            } catch (err) {
+                // If any error occurs inside the loop that is NOT a database error we want to fail the whole bundle for,
+                // we'll rethrow it to trigger the main session rollback.
+                throw err;
             }
-
-            // Increment course enrollment count
-            course.enrollmentCount += 1;
-            await course.save();
-
-            // Log activity
-            await logActivity({
-                userId: candidateId,
-                userRole: 'candidate',
-                action: 'ENROLL',
-                resource: 'BUNDLE',
-                resourceId: bundleId,
-                details: { bundleTitle: bundle.title, courseEnrolled: course.title, proratedAmount }
-            }, req);
-
-            results.push({ courseId: course._id, title: course.title, status: 'success' });
-            successfulCourseTitles.push(course.title);
-        } catch (err) {
-            errors.push({ courseId: course._id, message: err.message });
         }
-    }
 
-    // Increment overall Bundle enrollment
-    if (results.length > 0) {
-        bundle.enrollmentCount += 1;
-        await bundle.save();
+        // Increment overall Bundle enrollment
+        if (results.length > 0) {
+            await Bundle.findByIdAndUpdate(bundle._id, { $inc: { enrollmentCount: 1 } }, { session });
 
-        if (coupon && appliedDiscount > 0) {
-            coupon.usageCount += 1;
-            await coupon.save();
+            if (coupon && appliedDiscount > 0) {
+                coupon.usageCount += 1;
+                await coupon.save({ session });
+            }
         }
-    }
 
-    res.status(httpStatus.SUCCESS).json({
-        status: 'success',
-        data: {
-            bundleId: bundle._id,
-            bundleTitle: bundle.title,
-            processed: results.length,
-            failed: errors.length,
-            results,
-            errors
-        }
+        res.status(httpStatus.SUCCESS).json({
+            status: 'success',
+            data: {
+                bundleId: bundle._id,
+                bundleTitle: bundle.title,
+                processed: results.length,
+                failed: errors.length,
+                results,
+                errors
+            }
+        });
     });
 
     // Send Batch Enrollment Email
     if (successfulCourseTitles.length > 0 && req.user.notificationSettings?.emailAlerts) {
         new Email(req.user).sendBatchEnrollmentConfirmation(
-            successfulCourseTitles, 
+            successfulCourseTitles,
             totalPaidBundle.toFixed(2)
         ).catch(err => {
             console.error("Bundle enrollment email failed:", err);
@@ -1074,7 +1282,7 @@ export const enrollBundle = catchAsync(async (req, res, next) => {
 
     // Notify Mentors (Bundle Instructor + Course Instructors)
     const instructorsToNotify = [...new Set([
-        bundle.instructor.toString(), 
+        bundle.instructor.toString(),
         ...bundle.courses.map(c => c.instructor.toString())
     ])];
 
@@ -1121,17 +1329,17 @@ export const getAllReviews = catchAsync(async (req, res, next) => {
 
     const statsData = await Enrollment.aggregate([
         { $match: query },
-        { 
-            $group: { 
-                _id: null, 
+        {
+            $group: {
+                _id: null,
                 avgRating: { $avg: "$rating" },
-                fiveStarCount: { 
-                    $sum: { $cond: [{ $eq: ["$rating", 5] }, 1, 0] } 
+                fiveStarCount: {
+                    $sum: { $cond: [{ $eq: ["$rating", 5] }, 1, 0] }
                 },
                 monthlyCount: {
                     $sum: { $cond: [{ $gte: ["$ratedAt", firstDayOfMonth] }, 1, 0] }
                 }
-            } 
+            }
         }
     ]);
 
@@ -1180,7 +1388,7 @@ export const deleteReview = catchAsync(async (req, res, next) => {
     // Recalculate course average rating
     const allRatings = await Enrollment.find({ course: courseId, rating: { $exists: true } }, 'rating');
     const avgRating = allRatings.length > 0
-        ? (allRatings.reduce((acc, curr) => acc + curr.rating, 0) / allRatings.length)
+        ? (allRatings.reduce((acc, curr) => acc + curr.rating, 0) / (allRatings.length || 1))
         : 0;
 
     await Course.findByIdAndUpdate(courseId, { averageRating: avgRating });

@@ -22,13 +22,44 @@ export const CartProvider = ({ children }) => {
     const [discountAmount, setDiscountAmount] = useState(0);
     const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 
+    // ✅ AFTER
     useEffect(() => {
         localStorage.setItem('skillvyn_cart', JSON.stringify(cart));
-        // Recalculate or remove coupon if cart changes significantly?
-        // For now, let's keep it simple, but we might need to re-validate.
-        if (appliedCoupon && cart.length === 0) {
+
+        if (!appliedCoupon) return;
+
+        // Always clear if cart is empty
+        if (cart.length === 0) {
             removeCoupon();
+            return;
         }
+
+        // Re-check if the coupon is still valid for the remaining cart items.
+        // A coupon can be scoped to a specific instructor or specific items —
+        // if those items were removed, the coupon should be cleared.
+        const cartItems = cart.map(item => ({
+            id: item._id,
+            type: item.type || 'Course',
+            price: item.price
+        }));
+
+        api.post('/api/coupons/validate', {
+            code: appliedCoupon.code,
+            cartItems
+        }).then(response => {
+            if (response.data.status === 'success') {
+                // Update discount in case the amount changed (e.g. fewer applicable items)
+                setAppliedCoupon(response.data.data);
+                setDiscountAmount(response.data.data.discountAmount);
+            } else {
+                removeCoupon();
+                toast.info('Coupon removed — no longer applicable to your cart.');
+            }
+        }).catch(() => {
+            // If validation fails (coupon no longer valid for remaining items), clear it
+            removeCoupon();
+            toast.info('Coupon removed — no longer applicable to your cart.');
+        });
     }, [cart]);
 
     const addToCart = (course) => {
@@ -63,9 +94,9 @@ export const CartProvider = ({ children }) => {
                 price: item.price
             }));
 
-            const response = await api.post('/api/coupons/validate', { 
-                code, 
-                cartItems 
+            const response = await api.post('/api/coupons/validate', {
+                code,
+                cartItems
             });
 
             if (response.data.status === 'success') {
@@ -91,12 +122,12 @@ export const CartProvider = ({ children }) => {
     const cartTotal = Math.max(0, cartSubtotal - discountAmount);
 
     return (
-        <CartContext.Provider value={{ 
-            cart, 
-            addToCart, 
-            removeFromCart, 
-            clearCart, 
-            isInCart, 
+        <CartContext.Provider value={{
+            cart,
+            addToCart,
+            removeFromCart,
+            clearCart,
+            isInCart,
             cartSubtotal,
             cartTotal,
             appliedCoupon,

@@ -119,17 +119,17 @@ const CreateBundleModal = ({ isOpen, onClose, onSuccess, mode = 'mentor' }) => {
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-white"
+                        className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-white"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header */}
-                        <div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-8 text-white relative">
+                        <div className="bg-gradient-to-r from-primary to-secondary p-8 text-white relative">
                             <div className="relative z-10">
                                 <h2 className="text-2xl font-bold flex items-center gap-2">
                                     <Plus className="bg-white/20 p-1 rounded-lg" size={28} />
                                     Create Course Bundle
                                 </h2>
-                                <p className="text-emerald-100 text-sm mt-1">Group multiple courses together for a discounted price.</p>
+                                <p className="text-white/80 text-sm mt-1">Group multiple courses together for a discounted price.</p>
                             </div>
                             <button
                                 onClick={onClose}
@@ -159,7 +159,7 @@ const CreateBundleModal = ({ isOpen, onClose, onSuccess, mode = 'mentor' }) => {
                                         required
                                         type="text"
                                         placeholder="e.g. Full Stack Developer Masterclass Bundle"
-                                        className="w-full bg-slate-50 border border-slate-100 py-3.5 px-4 rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-semibold text-slate-700"
+                                        className="w-full bg-slate-50 border border-slate-100 py-3.5 px-4 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-semibold text-slate-700"
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                     />
@@ -173,23 +173,37 @@ const CreateBundleModal = ({ isOpen, onClose, onSuccess, mode = 'mentor' }) => {
                                         required
                                         rows="3"
                                         placeholder="Describe the value of this bundle..."
-                                        className="w-full bg-slate-50 border border-slate-100 py-3.5 px-4 rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-semibold text-slate-700 resize-none"
+                                        className="w-full bg-slate-50 border border-slate-100 py-3.5 px-4 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-semibold text-slate-700 resize-none"
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     />
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
-                                        <IndianRupee size={14} /> Bundle Price (Discounted Total ₹)
-                                    </label>
+                                    <div className="flex items-center justify-between mb-1">
+                                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                            <IndianRupee size={14} /> Bundle Price (Discounted Total ₹)
+                                        </label>
+                                        {formData.price && currentOriginalSum > 0 && Number(formData.price) < currentOriginalSum && (
+                                            <motion.div 
+                                                initial={{ opacity: 0, scale: 0.8 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                className="bg-accent/10 px-3 py-1 rounded-full flex items-center gap-2 border border-accent/20"
+                                            >
+                                                <Zap size={10} className="text-accent animate-pulse" />
+                                                <span className="text-[10px] font-black text-accent uppercase tracking-widest">
+                                                    {Math.round(((currentOriginalSum - Number(formData.price)) / currentOriginalSum) * 100)}% Discount
+                                                </span>
+                                            </motion.div>
+                                        )}
+                                    </div>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
                                         <input
                                             required
                                             type="number"
                                             placeholder="0.00"
-                                            className="w-full bg-slate-50 border border-slate-100 py-3.5 pl-8 pr-4 rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold text-slate-700"
+                                            className="w-full bg-slate-50 border border-slate-100 py-3.5 pl-8 pr-4 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-slate-700"
                                             value={formData.price}
                                             onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                                         />
@@ -199,7 +213,9 @@ const CreateBundleModal = ({ isOpen, onClose, onSuccess, mode = 'mentor' }) => {
                                             Original combined cost: ₹{currentOriginalSum.toLocaleString()}
                                         </p>
                                         {isPriceInvalid && (
-                                            <p className="text-[10px] text-red-500 font-black">Must be strictly less than original price!</p>
+                                            <p className="text-[10px] text-red-500 font-black flex items-center gap-1 uppercase tracking-tighter">
+                                                <Zap size={10} /> Must be less than ₹{currentOriginalSum.toLocaleString()}!
+                                            </p>
                                         )}
                                     </div>
                                 </div>
@@ -214,7 +230,7 @@ const CreateBundleModal = ({ isOpen, onClose, onSuccess, mode = 'mentor' }) => {
                                 <div className="bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden max-h-60 overflow-y-auto">
                                     {isFetchingCourses ? (
                                         <div className="p-8 text-center text-slate-400 text-sm font-bold flex justify-center items-center gap-2">
-                                            <div className="w-4 h-4 rounded-full border-2 border-slate-300 border-t-emerald-500 animate-spin"></div> Loading published courses...
+                                            <div className="w-4 h-4 rounded-full border-2 border-slate-300 border-t-primary animate-spin"></div> Loading published courses...
                                         </div>
                                     ) : availableCourses.length > 0 ? (
                                         <div className="divide-y divide-slate-100">
@@ -225,7 +241,7 @@ const CreateBundleModal = ({ isOpen, onClose, onSuccess, mode = 'mentor' }) => {
                                                 >
                                                     <input 
                                                         type="checkbox" 
-                                                        className="w-4 h-4 text-emerald-600 bg-slate-100 border-slate-300 rounded focus:ring-emerald-500 focus:ring-2 cursor-pointer"
+                                                        className="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer"
                                                         checked={formData.courses.includes(course._id)}
                                                         onChange={() => toggleCourseSelection(course._id)}
                                                     />
@@ -242,18 +258,18 @@ const CreateBundleModal = ({ isOpen, onClose, onSuccess, mode = 'mentor' }) => {
                                         </div>
                                     )}
                                 </div>
-                                <p className="text-[10px] text-emerald-600 font-black uppercase tracking-widest ml-1">
+                                <p className="text-[10px] text-primary font-black uppercase tracking-widest ml-1">
                                     Selected: {formData.courses.length} courses
                                 </p>
                             </div>
 
-                            <div className="bg-emerald-50/70 border border-emerald-100/50 rounded-[2rem] p-5 flex items-start gap-4">
-                                <div className="bg-emerald-500/10 p-2.5 rounded-2xl">
-                                    <Layout size={20} className="text-emerald-600" />
+                            <div className="bg-primary/5 border border-primary/10 rounded-[2rem] p-5 flex items-start gap-4">
+                                <div className="bg-primary/10 p-2.5 rounded-2xl">
+                                    <Layout size={20} className="text-primary" />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold text-emerald-900 leading-tight">Bundle Impact</p>
-                                    <p className="text-xs text-emerald-700 mt-1.5 leading-relaxed font-medium">
+                                    <p className="text-sm font-bold text-slate-800 leading-tight">Bundle Impact</p>
+                                    <p className="text-xs text-slate-600 mt-1.5 leading-relaxed font-medium">
                                         When a candidate purchases this bundle, they will automatically be enrolled in all selected courses, and you will receive the prorated revenue per course.
                                     </p>
                                 </div>
@@ -270,7 +286,7 @@ const CreateBundleModal = ({ isOpen, onClose, onSuccess, mode = 'mentor' }) => {
                                 <button
                                     type="submit"
                                     disabled={isLoading || formData.courses.length < 2 || isPriceInvalid}
-                                    className="flex-[2] py-4 px-6 rounded-2xl bg-emerald-600 text-white font-bold text-sm shadow-xl shadow-emerald-500/30 hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed group"
+                                    className="flex-[2] py-4 px-6 rounded-2xl bg-primary text-white font-bold text-sm shadow-xl shadow-primary/30 hover:bg-secondary transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed group"
                                 >
                                     {isLoading ? (
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

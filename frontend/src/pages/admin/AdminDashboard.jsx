@@ -31,10 +31,10 @@ const getRelativeTime = (date) => {
 
 const getActionColor = (action) => {
     switch (action?.toUpperCase()) {
-        case 'LOGIN': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-        case 'CREATE': return 'bg-blue-50 text-blue-600 border-blue-100';
-        case 'UPDATE': return 'bg-amber-50 text-amber-600 border-amber-100';
-        case 'DELETE': return 'bg-rose-50 text-rose-600 border-rose-100';
+        case 'LOGIN': return 'bg-accent/10 text-accent border-accent/20';
+        case 'CREATE': return 'bg-primary/10 text-primary border-primary/20';
+        case 'UPDATE': return 'bg-highlight/10 text-highlight border-highlight/20';
+        case 'DELETE': return 'bg-secondary/10 text-secondary border-secondary/20';
         default: return 'bg-slate-50 text-slate-600 border-slate-100';
     }
 };
@@ -66,32 +66,32 @@ const AdminDashboard = () => {
             value: data?.stats?.totalUsers?.toLocaleString() || '0', 
             icon: Users, 
             change: `+${data?.stats?.newUsersThisWeek || 0}`, 
-            colorClass: 'text-blue-600',
-            bgClass: 'bg-blue-50' 
+            colorClass: 'text-primary',
+            bgClass: 'bg-primary/10' 
         },
         { 
             label: 'Active Courses', 
             value: data?.stats?.totalCourses || '0', 
             icon: BookOpen, 
             change: 'Live', 
-            colorClass: 'text-emerald-600',
-            bgClass: 'bg-emerald-50' 
+            colorClass: 'text-primary',
+            bgClass: 'bg-primary/10' 
         },
         { 
             label: 'Mentors', 
             value: data?.stats?.totalMentors || '0', 
             icon: UserCheck, 
             change: 'Verified', 
-            colorClass: 'text-amber-600',
-            bgClass: 'bg-amber-50' 
+            colorClass: 'text-primary',
+            bgClass: 'bg-primary/10' 
         },
         { 
             label: 'Candidates', 
             value: data?.stats?.totalCandidates || '0', 
             icon: ShieldCheck, 
             change: 'Active', 
-            colorClass: 'text-purple-600',
-            bgClass: 'bg-purple-50' 
+            colorClass: 'text-secondary',
+            bgClass: 'bg-secondary/10' 
         },
     ];
 
@@ -105,7 +105,7 @@ const AdminDashboard = () => {
                 </div>
                 <button 
                     onClick={fetchDashboardData}
-                    className="p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all text-slate-400 group"
+                    className="p-2.5 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all text-slate-400 group shadow-sm"
                     title="Refresh Stats"
                 >
                     <RefreshCw size={20} className={loading ? 'animate-spin' : 'group-active:rotate-180 transition-transform'} />
@@ -123,11 +123,11 @@ const AdminDashboard = () => {
                         className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow"
                     >
                         <div className="flex justify-between items-start mb-4">
-                            <div className={`${stat.bgClass} p-3 rounded-xl flex items-center justify-center`}>
+                            <div className={`${stat.bgClass} p-3 rounded-2xl flex items-center justify-center`}>
                                 <stat.icon size={24} className={stat.colorClass} />
                             </div>
                             <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${
-                                stat.change.startsWith('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-600'
+                                stat.change.startsWith('+') ? 'bg-accent/10 text-accent' : 'bg-primary/10 text-primary'
                             }`}>
                                 {stat.change}
                             </span>

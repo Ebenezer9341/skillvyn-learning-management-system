@@ -18,7 +18,9 @@ import {
     Maximize2,
     Trophy,
     Lock,
-    ArrowRight
+    ArrowRight,
+    Eye,
+    BookOpen
 } from 'lucide-react';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
@@ -62,8 +64,12 @@ const CourseViewer = () => {
         }
     };
 
-    const completedCount = Object.values(completedLessons).filter(Boolean).length;
-    const progressPercent = course?.syllabus?.length > 0 ? Math.round((completedCount / course.syllabus.length) * 100) : 0;
+    // Only count non-preview (mastery) lessons towards progress
+    const completedCount = Object.entries(completedLessons)
+        .filter(([idx, completed]) => completed && !course?.syllabus?.[idx]?.isPreview)
+        .length;
+    const masterLessonsCount = course?.syllabus?.filter(l => !l.isPreview).length || 0;
+    const progressPercent = masterLessonsCount > 0 ? Math.round((completedCount / masterLessonsCount) * 100) : 0;
 
     useEffect(() => {
         const fetchCourse = async () => {
@@ -97,8 +103,8 @@ const CourseViewer = () => {
         return (
             <div className="flex items-center justify-center min-h-screen bg-slate-50">
                 <div className="text-center">
-                    <div className="w-12 h-12 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-slate-500 font-medium">Entering Classroom...</p>
+                    <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-slate-500 font-medium tracking-tight">Entering Classroom...</p>
                 </div>
             </div>
         );
@@ -168,7 +174,7 @@ const CourseViewer = () => {
         quiz.forEach((q, qIdx) => {
             if (answers[qIdx] === q.correctAnswer) correct++;
         });
-        return { correct, total: quiz.length, percent: Math.round((correct / quiz.length) * 100) };
+        return { correct, total: quiz.length, percent: Math.round((correct / (quiz.length || 1)) * 100) };
     };
 
     const renderContent = () => {
@@ -177,7 +183,7 @@ const CourseViewer = () => {
                 <div className="space-y-12 pb-20">
                     {/* Header */}
                     <div className="space-y-4">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100/50 text-blue-600">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 text-primary">
                             <Award size={12} />
                             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Comprehensive Pathway</span>
                         </div>
@@ -200,7 +206,7 @@ const CourseViewer = () => {
                                 {course.instructor?.firstName} {course.instructor?.lastName || 'Skillvyn Mentor'}
                             </h3>
                             <div className="flex items-center gap-2 mt-2">
-                                <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase border border-emerald-100/50">Verified Instructor</span>
+                                <span className="px-2 py-0.5 rounded-md bg-accent/5 text-accent text-[10px] font-black uppercase border border-accent/10">Verified Instructor</span>
                                 <span className="text-slate-300">•</span>
                                 <span className="text-slate-500 text-xs font-bold font-sans">Industry Expert</span>
                             </div>
@@ -210,16 +216,16 @@ const CourseViewer = () => {
                     {/* Stats Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         <div className="p-8 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col gap-4 group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500">
-                            <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                            <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                                 <Play size={24} />
                             </div>
                             <div>
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Syllabus</p>
-                                <p className="text-xl font-black text-slate-900">{lessons.length} Expert Lessons</p>
+                                <p className="text-xl font-black text-slate-900">{masterLessonsCount} Expert Lessons</p>
                             </div>
                         </div>
                         <div className="p-8 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col gap-4 group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500">
-                            <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                            <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-accent group-hover:scale-110 transition-transform">
                                 <Clock size={24} />
                             </div>
                             <div>
@@ -241,27 +247,27 @@ const CourseViewer = () => {
                     {/* Description Section */}
                     <div className="space-y-6">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-slate-900 text-white rounded-2xl flex items-center justify-center">
+                            <div className="w-10 h-10 bg-secondary text-white rounded-2xl flex items-center justify-center">
                                 <FileText size={20} />
                             </div>
                             <h2 className="text-2xl font-black text-slate-900 tracking-tight">Course Summary</h2>
                         </div>
                         <div className="bg-white p-12 rounded-2xl border border-slate-100 shadow-sm leading-[1.8] text-slate-600 font-medium whitespace-pre-wrap relative overflow-hidden">
-                            <div className="absolute top-0 left-0 w-2 h-full bg-blue-600/10" />
+                            <div className="absolute top-0 left-0 w-2 h-full bg-primary/10" />
                             {course.description}
                         </div>
                     </div>
 
                     {/* Start Learning Action */}
-                    <div className="p-12 bg-slate-900 rounded-2xl text-white flex flex-col md:flex-row items-center justify-between gap-10 shadow-2xl shadow-slate-200 relative overflow-hidden group">
-                        <div className="absolute inset-0 bg-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="p-12 bg-secondary rounded-2xl text-white flex flex-col md:flex-row items-center justify-between gap-10 shadow-2xl shadow-slate-200 relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                         <div className="relative space-y-3 z-10 text-center md:text-left">
                             <h3 className="text-3xl font-black leading-tight tracking-tight">The path is set.</h3>
                             <p className="text-slate-400 font-bold text-sm tracking-wide">Advance through each module to earn your verified credential.</p>
                         </div>
                         <button 
                             onClick={() => setActiveLessonIdx(0)}
-                            className="relative z-10 px-12 py-6 bg-white text-slate-900 rounded-xl font-black hover:bg-primary hover:text-white hover:scale-105 transition-all active:scale-95 shadow-2xl flex items-center gap-4 uppercase text-xs tracking-widest"
+                            className="relative z-10 px-12 py-6 bg-white text-secondary rounded-2xl font-black hover:bg-primary hover:text-white hover:scale-105 transition-all active:scale-95 shadow-2xl flex items-center gap-4 uppercase text-xs tracking-widest"
                         >
                             Begin Masterclass
                             <ArrowRight size={20} />
@@ -283,7 +289,7 @@ const CourseViewer = () => {
         if (isLocked) {
             return (
                 <div className="flex flex-col items-center justify-center py-20 px-8 text-center space-y-8 min-h-[60vh]">
-                    <div className="w-24 h-24 bg-slate-100 rounded-[2.5rem] flex items-center justify-center text-slate-400 relative">
+                    <div className="w-24 h-24 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 relative">
                         <Play size={40} className="opacity-20" />
                         <div className="absolute -top-2 -right-2 bg-amber-500 text-white p-3 rounded-2xl shadow-lg border-4 border-white">
                             <Lock size={20} />
@@ -298,7 +304,7 @@ const CourseViewer = () => {
                             <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Already have an account?</p>
                             <button 
                                 onClick={() => navigate('/login')}
-                                className="px-8 py-3.5 bg-slate-900 text-white rounded-2xl font-black hover:bg-black transition-all active:scale-95 shadow-xl shadow-slate-200"
+                                className="px-8 py-3.5 bg-secondary text-white rounded-2xl font-black hover:bg-secondary/90 transition-all active:scale-95 shadow-xl shadow-slate-200"
                             >
                                 Login to Account
                             </button>
@@ -336,9 +342,9 @@ const CourseViewer = () => {
                                         }
                                     }
                                 }}
-                                className={`px-10 py-5 rounded-[2rem] font-black transition-all hover:scale-105 active:scale-95 shadow-2xl flex items-center gap-3 ${
+                                className={`px-10 py-5 rounded-2xl font-black transition-all hover:scale-105 active:scale-95 shadow-2xl flex items-center gap-3 ${
                                     course.price > 0
-                                        ? 'bg-slate-900 text-white hover:bg-black shadow-slate-200'
+                                        ? 'bg-secondary text-white hover:bg-secondary/90 shadow-secondary/20'
                                         : 'bg-primary text-white hover:bg-primary/90 shadow-primary/20'
                                 }`}
                             >
@@ -356,23 +362,42 @@ const CourseViewer = () => {
                 {/* Lesson Header */}
                 <div className="flex items-center justify-between pb-4 border-b border-slate-50">
                     <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 w-fit px-3 py-1 rounded-full border border-blue-100">
-                            Lesson {activeLessonIdx + 1} of {lessons.length}
-                        </div>
+                        {/* Section badge — shows section-relative label and number */}
+                        {(() => {
+                            const isPreview = activeLesson.isPreview;
+                            const sectionLessons = lessons.filter(l => l.isPreview === isPreview);
+                            const positionInSection = sectionLessons.findIndex((_, i) => {
+                                const originalIdx = lessons.findIndex((l, li) => l === sectionLessons[i] && li <= activeLessonIdx);
+                                return originalIdx === activeLessonIdx || sectionLessons[i] === activeLesson;
+                            });
+                            const displayNum = lessons
+                                .slice(0, activeLessonIdx + 1)
+                                .filter(l => l.isPreview === isPreview).length;
+                            return (
+                                <div className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest w-fit px-3 py-1 rounded-full border ${
+                                    isPreview
+                                        ? 'text-accent bg-accent/5 border-accent/10'
+                                        : 'text-primary bg-primary/5 border-primary/10'
+                                }`}>
+                                    {isPreview ? <Eye size={12} /> : <BookOpen size={12} />}
+                                    {isPreview ? 'Preview' : 'Lesson'} {displayNum} of {sectionLessons.length}
+                                </div>
+                            );
+                        })()}
                         <h1 className="text-3xl font-black text-slate-900 leading-tight">{activeLesson.title}</h1>
                     </div>
-                    {enrollment && (
+                    {enrollment && !activeLesson.isPreview && (
                         <button 
                             onClick={() => toggleCompletion(activeLessonIdx)}
                             className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all active:scale-95 ${
                                 completedLessons[activeLessonIdx] 
-                                ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
+                                ? 'bg-accent/5 text-accent border border-accent/10' 
                                 : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm'
                             }`}
                         >
                             {completedLessons[activeLessonIdx] ? (
                                 <>
-                                    <CheckCircle2 size={20} className="text-emerald-500" />
+                                    <CheckCircle2 size={20} className="text-accent" />
                                     <span>Completed</span>
                                 </>
                             ) : (
@@ -388,7 +413,7 @@ const CourseViewer = () => {
                 {/* Video Stage */}
                 {activeLesson.video?.url && (
                     <div className="relative group">
-                        <div className="aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl shadow-slate-200 border border-slate-200">
+                        <div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl shadow-slate-200 border border-slate-200">
                             {activeLesson.video.url.includes('youtube.com') || activeLesson.video.url.includes('youtu.be') ? (
                                 <iframe 
                                     src={`https://www.youtube.com/embed/${activeLesson.video.url.split('v=')[1] || activeLesson.video.url.split('/').pop()}`}
@@ -408,7 +433,9 @@ const CourseViewer = () => {
                         </div>
                         <div className="mt-4 flex items-center justify-between text-slate-400 px-2">
                             <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-widest">
-                                <span className="flex items-center gap-1.5"><Clock size={14} /> {activeLesson.video.duration || '00:00'}</span>
+                                {activeLesson.duration && (
+                                    <span className="flex items-center gap-1.5"><Clock size={14} /> {activeLesson.duration}</span>
+                                )}
                                 <span className="flex items-center gap-1.5"><Maximize2 size={14} /> Fullscreen enabled</span>
                             </div>
                         </div>
@@ -424,13 +451,13 @@ const CourseViewer = () => {
 
                 {/* Assets / Downloads */}
                 {activeLesson.asset?.url && (
-                    <div className="bg-indigo-50/50 p-6 rounded-3xl border border-indigo-100/50 flex items-center justify-between">
+                    <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10 flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100">
+                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm border border-primary/10">
                                 <Download size={24} />
                             </div>
                             <div>
-                                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Resource File</p>
+                                <p className="text-[10px] font-black text-primary/40 uppercase tracking-widest">Resource File</p>
                                 <p className="text-sm font-bold text-slate-800">{activeLesson.asset.name || 'Downloadable Material'}</p>
                             </div>
                         </div>
@@ -438,7 +465,7 @@ const CourseViewer = () => {
                             href={activeLesson.asset.url} 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="bg-white text-indigo-600 px-6 py-2.5 rounded-xl font-bold text-sm shadow-sm border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all active:scale-95"
+                            className="bg-white text-primary px-6 py-2.5 rounded-2xl font-bold text-sm shadow-sm border border-primary/10 hover:bg-primary hover:text-white transition-all active:scale-95"
                         >
                             Download
                         </a>
@@ -462,7 +489,7 @@ const CourseViewer = () => {
                                 return (
                                     <div key={qIdx} className={`p-8 rounded-2xl border transition-all shadow-sm ${
                                         submitted 
-                                        ? isCorrect ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'
+                                        ? isCorrect ? 'bg-accent/5 border-accent/10' : 'bg-rose-50 border-rose-100'
                                         : 'bg-white border-slate-100'
                                     }`}>
                                         <p className="font-bold text-slate-800 mb-6 flex gap-3">
@@ -476,11 +503,11 @@ const CourseViewer = () => {
                                                 
                                                 let style = "bg-slate-50 border-slate-100 hover:bg-slate-100 text-slate-600";
                                                 if (submitted) {
-                                                    if (isOptionCorrect) style = "bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-200";
+                                                    if (isOptionCorrect) style = "bg-accent text-white border-accent shadow-lg shadow-accent/20";
                                                     else if (isSelected) style = "bg-rose-500 text-white border-rose-500 shadow-lg shadow-rose-200";
                                                     else style = "bg-white border-slate-100 text-slate-300 opacity-60";
                                                 } else if (isSelected) {
-                                                    style = "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-200";
+                                                    style = "bg-primary text-white border-primary shadow-lg shadow-primary/20";
                                                 }
 
                                                 return (
@@ -509,17 +536,17 @@ const CourseViewer = () => {
                         {!quizSubmitted[activeLessonIdx] ? (
                             <button 
                                 onClick={submitQuiz}
-                                className="w-full bg-slate-900 text-white py-5 rounded-[1.5rem] font-black text-lg shadow-xl shadow-slate-200 hover:bg-black transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                                className="w-full bg-secondary text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-secondary/20 hover:bg-secondary/90 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
                             >
                                 <Award size={22} />
                                 Check My Answers
                             </button>
                         ) : (
-                            <div className="bg-white p-8 rounded-[2rem] border-2 border-slate-900 shadow-2xl flex flex-col md:flex-row items-center gap-8">
+                            <div className="bg-white p-8 rounded-2xl border-2 border-secondary shadow-2xl flex flex-col md:flex-row items-center gap-8">
                                 <div className="relative">
                                     <svg className="w-24 h-24 transform -rotate-90">
                                         <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-100" />
-                                        <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={251.2} strokeDashoffset={251.2 - (251.2 * calculateQuizScore(activeLessonIdx).percent) / 100} className="text-emerald-500 transition-all duration-1000" />
+                                        <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={251.2} strokeDashoffset={251.2 - (251.2 * calculateQuizScore(activeLessonIdx).percent) / 100} className="text-accent transition-all duration-1000" />
                                     </svg>
                                     <div className="absolute inset-0 flex items-center justify-center font-black text-xl text-slate-800">
                                         {calculateQuizScore(activeLessonIdx).percent}%
@@ -556,7 +583,7 @@ const CourseViewer = () => {
                     {activeLessonIdx < lessons.length - 1 ? (
                         <button 
                             onClick={() => setActiveLessonIdx(prev => prev + 1)}
-                            className="flex items-center gap-3 px-8 py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all active:scale-95"
+                            className="flex items-center gap-3 px-8 py-4 bg-primary text-white rounded-2xl font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95"
                         >
                             Next Lesson
                             <ChevronRight size={20} />
@@ -575,7 +602,7 @@ const CourseViewer = () => {
                                 ) : (
                                     <button 
                                         onClick={() => navigate(`/courses/certificate/${id}`)}
-                                        className="flex items-center gap-3 px-8 py-4 bg-emerald-500 text-white rounded-2xl font-black shadow-lg shadow-emerald-100 hover:scale-105 transition-all active:scale-95 group"
+                                        className="flex items-center gap-3 px-8 py-4 bg-accent text-white rounded-2xl font-black shadow-lg shadow-accent/20 hover:scale-105 transition-all active:scale-95 group"
                                     >
                                         <Trophy size={20} className="group-hover:rotate-12 transition-transform" />
                                         View My Certificate
@@ -614,12 +641,12 @@ const CourseViewer = () => {
                         onClick={() => setActiveLessonIdx(-1)}
                         className={`w-full flex items-start gap-4 p-4 rounded-2xl transition-all text-left relative group ${
                             activeLessonIdx === -1 
-                            ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-100 shadow-sm' 
+                            ? 'bg-primary/5 text-primary ring-1 ring-primary/10 shadow-sm' 
                             : 'hover:bg-slate-50 text-slate-500'
                         }`}
                     >
                         <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 font-black text-[10px] transition-all ${
-                            activeLessonIdx === -1 ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-500'
+                            activeLessonIdx === -1 ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-primary/10 group-hover:text-primary'
                         }`}>
                             <Trophy size={14} />
                         </div>
@@ -630,75 +657,118 @@ const CourseViewer = () => {
                             <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-tight">General overview</p>
                         </div>
                         {activeLessonIdx === -1 && (
-                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-blue-600 rounded-r-full shadow-[2px_0_10px_rgba(37,99,235,0.4)]" />
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-primary rounded-r-full shadow-[2px_0_10px_rgba(0,108,250,0.4)]" />
                         )}
                     </button>
 
                     <div className="h-4 border-b border-slate-100 mb-4" />
 
-                    {lessons.map((lesson, idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => setActiveLessonIdx(idx)}
-                            className={`w-full flex items-start gap-4 p-4 rounded-2xl transition-all text-left relative group ${
-                                activeLessonIdx === idx 
-                                ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-100 shadow-sm' 
-                                : 'hover:bg-slate-50 text-slate-500'
-                            }`}
-                        >
-                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 font-black text-[10px] transition-all ${
-                                activeLessonIdx === idx ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-500'
-                            }`}>
-                                {idx + 1}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <p className={`text-xs font-bold leading-tight line-clamp-2 ${activeLessonIdx === idx ? 'text-blue-900' : 'text-slate-600'}`}>
-                                    {lesson.title}
-                                </p>
-                                <div className="flex items-center gap-3 mt-2">
-                                    {lesson.duration && (
-                                        <div className="flex items-center gap-1.5 text-slate-500 font-bold text-[9px]">
-                                            <Clock size={10} className="text-blue-500" />
-                                            {lesson.duration}
+                    {/* ── PREVIEW LESSONS ── */}
+                    {(() => {
+                        const previewLessons = lessons
+                            .map((l, i) => ({ lesson: l, idx: i }))
+                            .filter(({ lesson }) => lesson.isPreview);
+                        const regularLessons = lessons
+                            .map((l, i) => ({ lesson: l, idx: i }))
+                            .filter(({ lesson }) => !lesson.isPreview);
+
+                        const LessonBtn = ({ lesson, idx, sectionIdx, isPreviewSection }) => (
+                            <button
+                                key={idx}
+                                onClick={() => setActiveLessonIdx(idx)}
+                                className={`w-full flex items-start gap-4 p-4 rounded-2xl transition-all text-left relative group ${
+                                    activeLessonIdx === idx
+                                    ? 'bg-primary/5 text-primary ring-1 ring-primary/10 shadow-sm'
+                                    : 'hover:bg-slate-50 text-slate-500'
+                                }`}
+                            >
+                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 font-black text-[10px] transition-all ${
+                                    activeLessonIdx === idx
+                                        ? (isPreviewSection ? 'bg-accent text-white' : 'bg-primary text-white')
+                                        : 'bg-slate-100 text-slate-400 group-hover:bg-primary/10 group-hover:text-primary'
+                                }`}>
+                                    {isPreviewSection ? <Eye size={10} /> : sectionIdx + 1}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className={`text-xs font-bold leading-tight line-clamp-2 ${activeLessonIdx === idx ? 'text-blue-900' : 'text-slate-600'}`}>
+                                        {lesson.title}
+                                    </p>
+                                    <div className="flex items-center gap-3 mt-2">
+                                        {lesson.duration && (
+                                            <div className="flex items-center gap-1.5 text-slate-500 font-bold text-[9px]">
+                                                <Clock size={10} className="text-primary" />
+                                                {lesson.duration}
+                                            </div>
+                                        )}
+                                        <div className="flex items-center gap-2 opacity-40">
+                                            {lesson.video?.url && <Play size={10} />}
+                                            {lesson.text?.content && <FileText size={10} />}
+                                            {lesson.quiz?.length > 0 && <HelpCircle size={10} />}
                                         </div>
-                                    )}
-                                    <div className="flex items-center gap-2 opacity-40">
-                                        {lesson.video?.url && <Play size={10} />}
-                                        {lesson.text?.content && <FileText size={10} />}
-                                        {lesson.quiz?.length > 0 && <HelpCircle size={10} />}
                                     </div>
                                 </div>
-                            </div>
-                                {lesson.isPreview && (activeLessonIdx !== idx) && (
-                                    <div className="shrink-0 text-emerald-500 flex items-center gap-1">
-                                        <span className="text-[8px] font-black uppercase tracking-tighter bg-emerald-50 px-1 rounded border border-emerald-100/50">Free Preview</span>
+                                {completedLessons[idx] && (
+                                    <div className="shrink-0 text-emerald-500">
+                                        <CheckCircle2 size={14} />
                                     </div>
                                 )}
-                                {completedLessons[idx] && (
-                                <div className="shrink-0 text-emerald-500">
-                                    <CheckCircle2 size={14} />
-                                </div>
-                            )}
-                            {activeLessonIdx === idx && (
-                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-blue-600 rounded-r-full shadow-[2px_0_10px_rgba(37,99,235,0.4)]" />
-                            )}
-                        </button>
-                    ))}
+                                {activeLessonIdx === idx && (
+                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-primary rounded-r-full shadow-[2px_0_10px_rgba(0,108,250,0.4)]" />
+                                )}
+                            </button>
+                        );
+
+                        return (
+                            <>
+                                {/* Previews section */}
+                                {previewLessons.length > 0 && (
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-1.5 px-2 py-1">
+                                            <Eye size={10} className="text-accent" />
+                                            <span className="text-[9px] font-black text-accent uppercase tracking-[0.2em]">Free Previews</span>
+                                            <span className="text-[8px] font-black bg-accent/10 text-accent px-1.5 py-0.5 rounded-full ml-auto">{previewLessons.length}</span>
+                                        </div>
+                                        {previewLessons.map(({ lesson, idx }, sectionIdx) => (
+                                            <LessonBtn key={idx} lesson={lesson} idx={idx} sectionIdx={sectionIdx} isPreviewSection={true} />
+                                        ))}
+                                    </div>
+                                )}
+
+                                {previewLessons.length > 0 && regularLessons.length > 0 && (
+                                    <div className="h-px bg-slate-100 my-2" />
+                                )}
+
+                                {/* Regular lessons section */}
+                                {regularLessons.length > 0 && (
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-1.5 px-2 py-1">
+                                            <BookOpen size={10} className="text-primary" />
+                                            <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em]">Lessons</span>
+                                            <span className="text-[8px] font-black bg-primary/10 text-primary px-1.5 py-0.5 rounded-full ml-auto">{regularLessons.length}</span>
+                                        </div>
+                                        {regularLessons.map(({ lesson, idx }, sectionIdx) => (
+                                            <LessonBtn key={idx} lesson={lesson} idx={idx} sectionIdx={sectionIdx} isPreviewSection={false} />
+                                        ))}
+                                    </div>
+                                )}
+                            </>
+                        );
+                    })()}
                 </div>
 
                 <div className="p-6 border-t border-slate-100 bg-slate-50/50 space-y-4">
                     <div className="space-y-3">
                         <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
                             <div 
-                                className="h-full bg-blue-600 rounded-full transition-all duration-1000"
+                                className="h-full bg-primary rounded-full transition-all duration-1000"
                                 style={{ width: `${progressPercent}%` }}
                             />
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-[10px] font-black text-slate-400 uppercase">Course Progress</span>
                             <div className="flex flex-col items-end">
-                                <span className="text-[10px] font-black text-blue-600">{progressPercent}%</span>
-                                <span className="text-[8px] font-bold text-slate-400">{completedCount} / {lessons.length} Lessons</span>
+                                <span className="text-[10px] font-black text-primary">{progressPercent}%</span>
+                                <span className="text-[8px] font-bold text-slate-400">{completedCount} / {masterLessonsCount} Lessons</span>
                             </div>
                         </div>
                     </div>
@@ -708,7 +778,7 @@ const CourseViewer = () => {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 onClick={() => navigate(`/courses/certificate/${id}`)}
-                                className="w-full bg-emerald-500 text-white font-black py-4 rounded-2xl shadow-lg shadow-emerald-100 hover:shadow-xl transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-3"
+                                className="w-full bg-accent text-white font-black py-4 rounded-2xl shadow-lg shadow-accent/10 hover:shadow-xl transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-3"
                             >
                                 <Trophy size={18} />
                                 View Certificate
@@ -750,7 +820,7 @@ const CourseViewer = () => {
                         </button>
                     </div>
                     <div className="flex items-center gap-3">
-                        <div className="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-100">
+                        <div className="bg-accent/5 text-accent px-3 py-1.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-accent/10">
                             {user?.role === 'candidate' ? 'Learning Mode' : 'Preview Mode'}
                         </div>
                     </div>

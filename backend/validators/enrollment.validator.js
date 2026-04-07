@@ -50,3 +50,21 @@ export const progressUpdateValidation = [
     body("completed")
         .isBoolean().withMessage("Completed status must be a boolean value")
 ];
+
+/**
+ * Validation for submitting certification exam
+ */
+export const submitExamValidation = [
+    body("courseId").isMongoId().withMessage("Invalid Course ID"),
+    body("answers")
+        .isArray().withMessage("Answers must be an array")
+];
+
+/**
+ * Validation for submitting capstone project
+ */
+export const submitProjectValidation = [
+    body("courseId").isMongoId().withMessage("Invalid Course ID"),
+    body("projectUrl")
+        .isURL().withMessage("Project URL must be a valid URL")
+];

@@ -78,10 +78,9 @@ export const couponUpdateValidation = [
         .isNumeric().withMessage("Discount value must be a number")
         .isFloat({ min: 0 }).withMessage("Discount value cannot be negative")
         .custom((value, { req }) => {
-            const type = req.body.discountType || 'percentage'; // Defaulting to percentage if not provided in update?
-            // Actually, for update, we might need to check the existing coupon if type is not in req.body.
-            // But usually, an update will either change both or keep existing.
-            if (type === 'percentage' && value > 100) {
+            // Only perform the 100% check if the type is explicitly set to 'percentage' in this request
+            // or if we're sure it's a percentage (Create case handled above)
+            if (req.body.discountType === 'percentage' && value > 100) {
                 throw new Error("Percentage discount cannot exceed 100%");
             }
             return true;

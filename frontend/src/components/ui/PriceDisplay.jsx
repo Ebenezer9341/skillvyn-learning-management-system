@@ -63,11 +63,11 @@ const PriceDisplay = ({ price, originalPrice, size = 'normal', className = '' })
         <div className={`flex flex-col gap-0.5 ${className}`}>
             <div className="flex items-center gap-2">
                 <div className={`flex items-center gap-1 font-black text-slate-900 ${s.sale}`}>
-                    <IndianRupee size={s.icon} strokeWidth={3} className="text-blue-500" />
+                    <IndianRupee size={s.icon} strokeWidth={3} className="text-primary" />
                     <span>{formattedPrice}</span>
                 </div>
                 {discountPercent > 0 && (
-                    <span className={`bg-emerald-100 text-emerald-700 font-black uppercase tracking-widest rounded-md ${s.badge}`}>
+                    <span className={`bg-emerald-50 text-emerald-600 font-black uppercase tracking-widest rounded-full ${s.badge} border border-emerald-100`}>
                         {discountPercent}% OFF
                     </span>
                 )}

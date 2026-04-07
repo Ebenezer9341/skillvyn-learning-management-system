@@ -20,7 +20,8 @@ import {
     Star,
     ReceiptText,
     Layers,
-    Tag
+    Tag,
+    Bell
 } from 'lucide-react'
 
 
@@ -53,31 +54,10 @@ const SideNav = ({ onClose }) => {
         >
             <div className="p-8 border-b border-slate-100 flex items-center justify-between">
                 <div className="">
-                    <img src={logo} alt="" />
-                    {user?.role === 'superuser' && (
-                        <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 ring-1 ring-primary/10">
-                            <ShieldCheck size={12} className="text-primary" />
-                            <span className="text-[11px] font-bold text-primary uppercase tracking-widest">Superuser</span>
-                        </div>
-                    )}
-                    {user?.role === 'mentor' && (
-                        <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 ring-1 ring-primary/10">
-                            <GraduationCap size={12} className="text-primary" />
-                            <span className="text-[11px] font-bold text-primary uppercase tracking-widest">Mentor</span>
-                        </div>
-                    )}
-                    {user?.role === 'candidate' && (
-                        <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 ring-1 ring-primary/10">
-                            <User size={12} className="text-primary" />
-                            <span className="text-[11px] font-bold text-primary uppercase tracking-widest">Candidate</span>
-                        </div>
-                    )}
-                    {user?.role === 'admin' && (
-                        <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 ring-1 ring-primary/10">
-                            <ShieldCheck size={12} className="text-primary" />
-                            <span className="text-[11px] font-bold text-primary uppercase tracking-widest">Admin</span>
-                        </div>
-                    )}
+                    <img src={logo} alt="Skillvyn Logo" className="h-auto max-w-[150px]" />
+                    <div className="mt-3 flex items-center gap-1.5">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Powered by Wiznsoft</span>
+                    </div>
                 </div>
 
                 {/* Close button for mobile */}
@@ -96,7 +76,7 @@ const SideNav = ({ onClose }) => {
                     <>
                         <Link
                             to="/superuser"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/superuser')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/superuser')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -108,9 +88,9 @@ const SideNav = ({ onClose }) => {
 
                         <Link
                             to="/superuser/users"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${(isActive('/superuser/users') || location.pathname.startsWith('/superuser/user/'))
-                                    ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
-                                    : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${(isActive('/superuser/users') || location.pathname.startsWith('/superuser/user/'))
+                                ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
+                                : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
                             onClick={onClose}
                         >
@@ -118,19 +98,19 @@ const SideNav = ({ onClose }) => {
                             <span>User Management</span>
                         </Link>
                         <Link
-                            to="/superuser/students"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/superuser/students')
+                            to="/superuser/candidates"
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/superuser/candidates')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
                             onClick={onClose}
                         >
-                            <GraduationCap size={20} className={isActive('/superuser/students') ? 'text-primary' : ''} />
-                            <span>Students</span>
+                            <GraduationCap size={20} className={isActive('/superuser/candidates') ? 'text-primary' : ''} />
+                            <span>Candidates</span>
                         </Link>
                         <Link
                             to="/superuser/mentors"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/superuser/mentors')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/superuser/mentors')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -140,24 +120,27 @@ const SideNav = ({ onClose }) => {
                             <span>Mentors</span>
                         </Link>
 
+
+
                         <Link
-                            to="/superuser/auditLogs"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/superuser/auditLogs')
+                            to="/superuser/notifications"
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/superuser/notifications')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
+                            onClick={onClose}
                         >
-                            <ShieldCheck size={20} className={isActive('/superuser/auditLogs') ? 'text-primary' : ''} />
-                            <span>Audit Log</span>
+                            <Bell size={20} className={isActive('/superuser/notifications') ? 'text-primary' : ''} />
+                            <span>Notifications</span>
                         </Link>
 
                         <Link
                             to="/superuser/courses"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${(isActive('/superuser/courses') ||
-                                    location.pathname.startsWith('/superuser/course/') ||
-                                    isActive('/superuser/analytics/platform'))
-                                    ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
-                                    : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${(isActive('/superuser/courses') ||
+                                location.pathname.startsWith('/superuser/course/') ||
+                                isActive('/superuser/analytics/platform'))
+                                ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
+                                : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
                             onClick={onClose}
                         >
@@ -167,7 +150,7 @@ const SideNav = ({ onClose }) => {
 
                         <Link
                             to="/superuser/bundles"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/superuser/bundles')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/superuser/bundles')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -177,20 +160,10 @@ const SideNav = ({ onClose }) => {
                             <span>Bundles</span>
                         </Link>
 
-                        <Link
-                            to="/superuser/profile"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/superuser/profile')
-                                ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
-                                : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
-                                }`}
-                            onClick={onClose}
-                        >
-                            <User size={20} className={isActive('/superuser/profile') ? 'text-primary' : ''} />
-                            <span>Profile</span>
-                        </Link>
+                       
                         <Link
                             to="/superuser/coupons"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/superuser/coupons')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/superuser/coupons')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -201,7 +174,7 @@ const SideNav = ({ onClose }) => {
                         </Link>
                         <Link
                             to="/superuser/reviews"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/superuser/reviews')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/superuser/reviews')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -212,7 +185,7 @@ const SideNav = ({ onClose }) => {
                         </Link>
                         <Link
                             to="/superuser/invoices"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/superuser/invoices')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/superuser/invoices')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -221,7 +194,27 @@ const SideNav = ({ onClose }) => {
                             <ReceiptText size={20} className={isActive('/superuser/invoices') ? 'text-primary' : ''} />
                             <span>Finances & Billing</span>
                         </Link>
-
+                         <Link
+                            to="/superuser/profile"
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/superuser/profile')
+                                ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
+                                : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
+                                }`}
+                            onClick={onClose}
+                        >
+                            <User size={20} className={isActive('/superuser/profile') ? 'text-primary' : ''} />
+                            <span>Profile</span>
+                        </Link>
+                        <Link
+                            to="/superuser/auditLogs"
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/superuser/auditLogs')
+                                ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
+                                : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
+                                }`}
+                        >
+                            <ShieldCheck size={20} className={isActive('/superuser/auditLogs') ? 'text-primary' : ''} />
+                            <span>Audit Log</span>
+                        </Link>
 
                     </>
                 )}
@@ -230,7 +223,7 @@ const SideNav = ({ onClose }) => {
                     <>
                         <Link
                             to="/admin"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/admin')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/admin')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -240,10 +233,21 @@ const SideNav = ({ onClose }) => {
                             <span>Dashboard</span>
                         </Link>
                         <Link
+                            to="/admin/notifications"
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/admin/notifications')
+                                ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
+                                : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
+                                }`}
+                            onClick={onClose}
+                        >
+                            <Bell size={20} className={isActive('/admin/notifications') ? 'text-primary' : ''} />
+                            <span>Notifications</span>
+                        </Link>
+                        <Link
                             to="/admin/users"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${(isActive('/admin/users') || location.pathname.startsWith('/admin/user/'))
-                                    ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
-                                    : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${(isActive('/admin/users') || location.pathname.startsWith('/admin/user/'))
+                                ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
+                                : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
                             onClick={onClose}
                         >
@@ -251,19 +255,19 @@ const SideNav = ({ onClose }) => {
                             <span>User Management</span>
                         </Link>
                         <Link
-                            to="/admin/students"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/admin/students')
+                            to="/admin/candidates"
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/admin/candidates')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
                             onClick={onClose}
                         >
-                            <GraduationCap size={20} className={isActive('/admin/students') ? 'text-primary' : ''} />
-                            <span>Students</span>
+                            <GraduationCap size={20} className={isActive('/admin/candidates') ? 'text-primary' : ''} />
+                            <span>Candidates</span>
                         </Link>
                         <Link
                             to="/admin/mentors"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/admin/mentors')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/admin/mentors')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -273,13 +277,15 @@ const SideNav = ({ onClose }) => {
                             <span>Mentors</span>
                         </Link>
 
+                        
+
                         <Link
                             to="/admin/courses"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${(isActive('/admin/courses') ||
-                                    location.pathname.startsWith('/admin/course/') ||
-                                    isActive('/admin/analytics/platform'))
-                                    ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
-                                    : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${(isActive('/admin/courses') ||
+                                location.pathname.startsWith('/admin/course/') ||
+                                isActive('/admin/analytics/platform'))
+                                ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
+                                : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
                             onClick={onClose}
                         >
@@ -289,7 +295,7 @@ const SideNav = ({ onClose }) => {
 
                         <Link
                             to="/admin/bundles"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/admin/bundles')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/admin/bundles')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -298,20 +304,10 @@ const SideNav = ({ onClose }) => {
                             <Layers size={20} className={isActive('/admin/bundles') ? 'text-primary' : ''} />
                             <span>Bundles</span>
                         </Link>
-                        <Link
-                            to="/admin/profile"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/admin/profile')
-                                ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
-                                : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
-                                }`}
-                            onClick={onClose}
-                        >
-                            <User size={20} className={isActive('/admin/profile') ? 'text-primary' : ''} />
-                            <span>Profile</span>
-                        </Link>
+
                         <Link
                             to="/admin/coupons"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/admin/coupons')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/admin/coupons')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -322,7 +318,7 @@ const SideNav = ({ onClose }) => {
                         </Link>
                         <Link
                             to="/admin/reviews"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/admin/reviews')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/admin/reviews')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -333,7 +329,7 @@ const SideNav = ({ onClose }) => {
                         </Link>
                         <Link
                             to="/admin/invoices"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/admin/invoices')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/admin/invoices')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -343,8 +339,19 @@ const SideNav = ({ onClose }) => {
                             <span>Finances & Billing</span>
                         </Link>
                         <Link
+                            to="/admin/profile"
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/admin/profile')
+                                ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
+                                : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
+                                }`}
+                            onClick={onClose}
+                        >
+                            <User size={20} className={isActive('/admin/profile') ? 'text-primary' : ''} />
+                            <span>Profile</span>
+                        </Link>
+                        <Link
                             to="/admin/auditLogs"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/admin/auditLogs')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/admin/auditLogs')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -360,7 +367,7 @@ const SideNav = ({ onClose }) => {
                     <>
                         <Link
                             to="/mentor"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/mentor')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/mentor')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -371,10 +378,22 @@ const SideNav = ({ onClose }) => {
                         </Link>
 
                         <Link
+                            to="/mentor/notifications"
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/mentor/notifications')
+                                ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
+                                : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
+                                }`}
+                            onClick={onClose}
+                        >
+                            <Bell size={20} className={isActive('/mentor/notifications') ? 'text-primary' : ''} />
+                            <span>Notifications</span>
+                        </Link>
+
+                        <Link
                             to="/mentor/courses"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${(isActive('/mentor/courses') || location.pathname.startsWith('/mentor/course/'))
-                                    ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
-                                    : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${(isActive('/mentor/courses') || location.pathname.startsWith('/mentor/course/'))
+                                ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
+                                : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
                             onClick={onClose}
                         >
@@ -384,7 +403,7 @@ const SideNav = ({ onClose }) => {
 
                         <Link
                             to="/mentor/bundles"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/mentor/bundles')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/mentor/bundles')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -395,19 +414,30 @@ const SideNav = ({ onClose }) => {
                         </Link>
 
                         <Link
-                            to="/mentor/students"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/mentor/students')
+                            to="/mentor/candidates"
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/mentor/candidates')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
                             onClick={onClose}
                         >
-                            <GraduationCap size={20} className={isActive('/mentor/students') ? 'text-primary' : ''} />
-                            <span>My Students</span>
+                            <GraduationCap size={20} className={isActive('/mentor/candidates') ? 'text-primary' : ''} />
+                            <span>My Candidates</span>
+                        </Link>
+                        <Link
+                            to="/mentor/coupons"
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/mentor/coupons')
+                                ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
+                                : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
+                                }`}
+                            onClick={onClose}
+                        >
+                            <Tag size={20} className={isActive('/mentor/coupons') ? 'text-primary' : ''} />
+                            <span>Coupons</span>
                         </Link>
                         <Link
                             to="/mentor/reviews"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/mentor/reviews')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/mentor/reviews')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -418,7 +448,7 @@ const SideNav = ({ onClose }) => {
                         </Link>
                         <Link
                             to="/mentor/invoices"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/mentor/invoices')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/mentor/invoices')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -427,9 +457,11 @@ const SideNav = ({ onClose }) => {
                             <ReceiptText size={20} className={isActive('/mentor/invoices') ? 'text-primary' : ''} />
                             <span>Finances & Billing</span>
                         </Link>
+                        
+                        
                         <Link
                             to="/mentor/profile"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/mentor/profile')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/mentor/profile')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -439,19 +471,8 @@ const SideNav = ({ onClose }) => {
                             <span>Profile</span>
                         </Link>
                         <Link
-                            to="/mentor/coupons"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/mentor/coupons')
-                                ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
-                                : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
-                                }`}
-                            onClick={onClose}
-                        >
-                            <Tag size={20} className={isActive('/mentor/coupons') ? 'text-primary' : ''} />
-                            <span>Coupons</span>
-                        </Link>
-                        <Link
                             to="/mentor/audit-logs"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/mentor/audit-logs')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/mentor/audit-logs')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -467,7 +488,7 @@ const SideNav = ({ onClose }) => {
                     <>
                         <Link
                             to="/candidate"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/candidate')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/candidate')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -477,8 +498,19 @@ const SideNav = ({ onClose }) => {
                             <span>Curriculums</span>
                         </Link>
                         <Link
+                            to="/candidate/notifications"
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/candidate/notifications')
+                                ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
+                                : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
+                                }`}
+                            onClick={onClose}
+                        >
+                            <Bell size={20} className={isActive('/candidate/notifications') ? 'text-primary' : ''} />
+                            <span>Notifications</span>
+                        </Link>
+                        <Link
                             to="/candidate/bundles"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/candidate/bundles')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/candidate/bundles')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -489,9 +521,9 @@ const SideNav = ({ onClose }) => {
                         </Link>
                         <Link
                             to="/candidate/courses"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${(isActive('/candidate/courses') || location.pathname.startsWith('/candidate/course/'))
-                                    ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
-                                    : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${(isActive('/candidate/courses') || location.pathname.startsWith('/candidate/course/'))
+                                ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
+                                : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
                             onClick={onClose}
                         >
@@ -500,7 +532,7 @@ const SideNav = ({ onClose }) => {
                         </Link>
                         <Link
                             to="/candidate/achievements"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/candidate/achievements')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/candidate/achievements')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -511,7 +543,7 @@ const SideNav = ({ onClose }) => {
                         </Link>
                         <Link
                             to="/candidate/purchases"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/candidate/purchases')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/candidate/purchases')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -522,7 +554,7 @@ const SideNav = ({ onClose }) => {
                         </Link>
                         <Link
                             to="/candidate/profile"
-                            className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive('/candidate/profile')
+                            className={`flex items-center space-x-3 p-3 rounded-2xl transition-all duration-200 ${isActive('/candidate/profile')
                                 ? 'bg-primary/10 text-primary font-bold shadow-sm shadow-primary/5'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-secondary font-medium'
                                 }`}
@@ -538,7 +570,7 @@ const SideNav = ({ onClose }) => {
             <div className="p-6 border-t border-slate-100">
                 <button
                     onClick={handleLogout}
-                    className="flex items-center space-x-3 p-3 w-full rounded-xl text-red-500 hover:bg-red-50 transition-all font-bold group"
+                    className="flex items-center space-x-3 p-3 w-full rounded-2xl text-red-500 hover:bg-red-50 transition-all font-bold group"
                 >
                     <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
                     <span>Logout</span>

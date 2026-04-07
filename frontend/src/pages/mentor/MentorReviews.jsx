@@ -71,32 +71,32 @@ const MentorReviews = () => {
             label: 'Total Reviews',
             value: totalStats.totalReviews,
             icon: MessageSquare,
-            colorClass: 'text-blue-600',
-            bgClass: 'bg-blue-50',
+            colorClass: 'text-primary',
+            bgClass: 'bg-primary/10',
             change: 'Lifetime feedback'
         },
         {
             label: 'Average Rating',
             value: totalStats.averageRating,
             icon: Star,
-            colorClass: 'text-amber-600',
-            bgClass: 'bg-amber-50',
+            colorClass: 'text-accent',
+            bgClass: 'bg-accent/10',
             change: 'Course satisfaction'
         },
         {
             label: '5-Star Ratings',
             value: totalStats.fiveStarCount,
             icon: CheckCircle,
-            colorClass: 'text-emerald-600',
-            bgClass: 'bg-emerald-50',
+            colorClass: 'text-primary',
+            bgClass: 'bg-primary/10',
             change: 'Excellent feedback'
         },
         {
             label: 'Reviews This Month',
             value: totalStats.monthlyReviews,
             icon: Calendar,
-            colorClass: 'text-purple-600',
-            bgClass: 'bg-purple-50',
+            colorClass: 'text-secondary',
+            bgClass: 'bg-secondary/10',
             change: 'Recent momentum'
         }
     ];
@@ -117,7 +117,7 @@ const MentorReviews = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: idx * 0.1 }}
-                        className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow group"
+                        className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow group"
                     >
                         <div className="flex justify-between items-start mb-4">
                             <div className={`${stat.bgClass} p-3 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
@@ -134,7 +134,7 @@ const MentorReviews = () => {
             </div>
 
             {/* Filters Section */}
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm mb-8">
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm mb-8">
                 <div className="p-6 border-b border-slate-100">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="relative flex-1 md:w-96">
@@ -144,13 +144,13 @@ const MentorReviews = () => {
                                 placeholder="Search by student, course, or review content..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-sm font-medium"
+                                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-medium"
                             />
                         </div>
                         <button 
                             onClick={() => setShowFilters(!showFilters)}
                             className={`flex items-center gap-2 px-5 py-3 border rounded-2xl text-sm font-black uppercase tracking-widest transition-all ${
-                                showFilters ? 'bg-blue-50 border-blue-200 text-blue-600' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                                showFilters ? 'bg-primary/5 border-primary/20 text-primary' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                             }`}
                         >
                             <Filter size={18} />
@@ -173,7 +173,7 @@ const MentorReviews = () => {
                                     <select 
                                         value={filterCourse}
                                         onChange={(e) => setFilterCourse(e.target.value)}
-                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-blue-500/10"
+                                        className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10"
                                     >
                                         {uniqueCourses.map(c => <option key={c} value={c}>{c}</option>)}
                                     </select>
@@ -183,7 +183,7 @@ const MentorReviews = () => {
                                     <select 
                                         value={filterRating}
                                         onChange={(e) => setFilterRating(e.target.value)}
-                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-blue-500/10"
+                                        className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10"
                                     >
                                         <option value="All">All Ratings</option>
                                         <option value="5">5 Stars</option>
@@ -202,8 +202,8 @@ const MentorReviews = () => {
             {/* Reviews List */}
             <div className="space-y-4">
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
-                        <Loader2 className="w-10 h-10 text-blue-500 animate-spin mb-4" />
+                    <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                        <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
                         <p className="text-slate-500 font-bold">Fetching reviews...</p>
                     </div>
                 ) : filteredReviews.length > 0 ? (
@@ -213,7 +213,7 @@ const MentorReviews = () => {
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: idx * 0.05 }}
-                            className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col md:flex-row gap-6 relative overflow-hidden group hover:shadow-md transition-shadow"
+                            className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-6 relative overflow-hidden group hover:shadow-md transition-shadow"
                         >
                             {/* Course Badge */}
                             <div className="absolute top-0 right-0 p-6 flex flex-col items-end">
@@ -225,7 +225,7 @@ const MentorReviews = () => {
 
                             {/* Candidate Info */}
                             <div className="flex items-start gap-4 min-w-[200px]">
-                                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white border-4 border-white shadow-xl flex-shrink-0">
+                                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white border-4 border-white shadow-xl flex-shrink-0">
                                     {review.candidate?.avatar ? (
                                         <img src={review.candidate.avatar} alt="" className="w-full h-full object-cover" />
                                     ) : (
@@ -239,12 +239,12 @@ const MentorReviews = () => {
                                     <p className="text-base font-black text-slate-900 truncate">
                                         {review.candidate?.firstName} {review.candidate?.lastName}
                                     </p>
-                                    <div className="flex items-center gap-1 mt-1 font-bold text-xs text-amber-500">
+                                    <div className="flex items-center gap-1 mt-1 font-bold text-xs text-accent">
                                         {[...Array(5)].map((_, i) => (
                                             <Star 
                                                 key={i} 
                                                 size={14} 
-                                                className={i < review.rating ? "fill-amber-500" : "text-slate-200"} 
+                                                className={i < review.rating ? "fill-accent text-accent" : "text-slate-200"} 
                                             />
                                         ))}
                                     </div>
@@ -257,7 +257,7 @@ const MentorReviews = () => {
 
                             {/* Review Content */}
                             <div className="flex-1 bg-slate-50/50 p-6 rounded-2xl border border-slate-100 relative">
-                                <Quote className="absolute top-4 right-4 text-slate-200 rotate-180" size={32} />
+                                <Quote className="absolute top-4 right-4 text-primary/10 rotate-180" size={32} />
                                 <p className="text-sm md:text-base font-medium text-slate-700 leading-relaxed relative z-10 italic">
                                     {review.review || "No written feedback provided."}
                                 </p>
@@ -265,7 +265,7 @@ const MentorReviews = () => {
                         </motion.div>
                     ))
                 ) : (
-                    <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                    <div className="text-center py-20 bg-white rounded-2xl border border-slate-100 shadow-sm">
                         <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
                             <MessageSquare size={40} className="text-slate-300" />
                         </div>
@@ -276,24 +276,24 @@ const MentorReviews = () => {
             </div>
 
             {/* Pagination */}
-            <div className="mt-8 p-6 bg-white rounded-3xl border border-slate-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-                <p className="text-sm text-slate-500 font-bold">
-                    Showing <span className="text-slate-900">{filteredReviews.length}</span> results 
-                    <span className="text-slate-300 mx-2">|</span> 
-                    Total <span className="text-slate-900">{pagination.total}</span> reviews
+            <div className="mt-8 p-6 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+                <p className="text-sm font-black text-slate-400 uppercase tracking-widest leading-none">
+                    Showing <span className="text-secondary">{filteredReviews.length}</span> results 
+                    <span className="text-slate-200 mx-3">|</span> 
+                    Total <span className="text-primary">{pagination.total}</span> reviews
                 </p>
                 <div className="flex gap-3">
                     <button 
                         disabled={page === 1 || loading}
                         onClick={() => fetchReviews(page - 1)}
-                        className="px-6 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-black uppercase tracking-widest text-slate-700 hover:bg-slate-50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-6 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm font-black uppercase tracking-widest text-slate-700 hover:bg-slate-50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Previous
                     </button>
                     <button 
                         disabled={page >= pagination.pages || loading}
                         onClick={() => fetchReviews(page + 1)}
-                        className="px-6 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-black uppercase tracking-widest text-slate-700 hover:bg-slate-50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-6 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm font-black uppercase tracking-widest text-slate-700 hover:bg-slate-50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Next Page
                     </button>

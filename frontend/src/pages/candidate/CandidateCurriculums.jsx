@@ -173,7 +173,7 @@ const CandidateCurriculums = () => {
                             <button
                                 key={cat}
                                 onClick={() => setActiveCategory(cat)}
-                                className={`px-6 py-3 rounded-xl text-xs font-black transition-all whitespace-nowrap border ${
+                                className={`px-6 py-3 rounded-2xl text-xs font-black transition-all whitespace-nowrap border ${
                                     activeCategory === cat 
                                     ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20 scale-105' 
                                     : 'bg-white border-slate-100 text-slate-500 hover:border-slate-300'
@@ -195,9 +195,9 @@ const CandidateCurriculums = () => {
                         <motion.div 
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="bg-white rounded-[3rem] p-20 text-center border border-slate-100 shadow-sm flex flex-col items-center"
+                            className="bg-white rounded-2xl p-20 text-center border border-slate-100 shadow-sm flex flex-col items-center"
                         >
-                            <div className="w-24 h-24 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-8">
+                            <div className="w-24 h-24 bg-slate-50 rounded-2xl flex items-center justify-center mb-8">
                                 <Search size={40} className="text-slate-200" />
                             </div>
                             <h3 className="text-2xl font-black text-slate-900">No results found</h3>
@@ -232,7 +232,7 @@ const CandidateCurriculums = () => {
                                         key={course._id}
                                         className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group flex flex-col h-full active:scale-[0.98] p-3 relative cursor-pointer"
                                     >
-                                        <div className="flex flex-col h-full overflow-hidden rounded-xl">
+                                        <div className="flex flex-col h-full overflow-hidden rounded-2xl">
                                         {/* Image Header */}
                                         <div className="h-48 relative overflow-hidden bg-slate-100 rounded-2xl">
                                             <img 
@@ -244,23 +244,23 @@ const CandidateCurriculums = () => {
                                             
                                             {/* Top Overlay Badges */}
                                             <div className="absolute top-4 left-4 right-4 flex justify-between items-start pointer-events-none">
-                                                <div className="bg-white/95 backdrop-blur shadow-sm rounded-lg px-2.5 py-1 flex items-center gap-1.5 border border-slate-100">
+                                                <div className="bg-white/95 backdrop-blur shadow-sm rounded-2xl px-2.5 py-1 flex items-center gap-1.5 border border-slate-100">
                                                     <BookOpen size={10} className="text-primary" />
                                                     <span className="text-[9px] font-black uppercase text-slate-800 tracking-wider">
                                                         {course.category}
                                                     </span>
                                                 </div>
-                                                <div className="bg-slate-900/80 backdrop-blur rounded-lg px-2.5 py-1 flex items-center gap-1.5 border border-white/10">
+                                                <div className="bg-secondary/80 backdrop-blur rounded-2xl px-2.5 py-1 flex items-center gap-1.5 border border-white/10">
                                                     <Clock size={10} className="text-primary" />
                                                     <span className="text-[9px] font-black uppercase text-white tracking-wider">
-                                                        {course.duration}
+                                                        {course.duration || '0m'}
                                                     </span>
                                                 </div>
                                             </div>
 
                                             {/* Bottom Overlay Badge - DIFFICULTY LEVEL */}
                                             <div className="absolute bottom-4 left-4 pointer-events-none">
-                                                <div className="bg-primary/20 backdrop-blur-md text-white text-[8px] font-black px-2.5 py-1 rounded-lg border border-white/20 uppercase tracking-[0.15em]">
+                                                <div className="bg-primary/20 backdrop-blur-md text-white text-[8px] font-black px-2.5 py-1 rounded-2xl border border-white/20 uppercase tracking-[0.15em]">
                                                     {course.level}
                                                 </div>
                                             </div>
@@ -276,7 +276,7 @@ const CandidateCurriculums = () => {
                                             {/* 2. Mentor & Rating Row */}
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center text-primary text-[10px] font-bold overflow-hidden border border-primary/5">
+                                                    <div className="w-6 h-6 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-[10px] font-bold overflow-hidden border border-primary/5">
                                                         {course.instructor?.avatar ? (
                                                             <img src={course.instructor.avatar} alt="" className="w-full h-full object-cover" />
                                                         ) : (
@@ -288,7 +288,7 @@ const CandidateCurriculums = () => {
                                                     </span>
                                                 </div>
 
-                                                <div className="flex items-center gap-1.5 bg-slate-50/80 px-2 py-1 rounded-lg border border-slate-100/50">
+                                                <div className="flex items-center gap-1.5 bg-slate-50/80 px-2 py-1 rounded-2xl border border-slate-100/50">
                                                     <Star size={10} fill="#fbbf24" className="text-amber-400" />
                                                     <span className="text-[10px] font-black text-slate-900 tracking-tight">{course.averageRating || '0.0'}</span>
                                                     <div className="w-[1px] h-2 bg-slate-200" />
@@ -307,7 +307,7 @@ const CandidateCurriculums = () => {
                                                             size="small"
                                                         />
                                                     ) : (
-                                                        <p className="text-lg font-black tracking-tighter text-emerald-500 mt-1">
+                                                        <p className="text-lg font-black tracking-tighter text-accent mt-1">
                                                             FREE
                                                         </p>
                                                     )}
@@ -325,7 +325,7 @@ const CandidateCurriculums = () => {
                                                                 toast.success('Added to cart');
                                                             }
                                                         }}
-                                                        className={`h-9 px-3 rounded-xl flex items-center gap-2 transition-all font-black text-[9px] uppercase tracking-widest ${
+                                                        className={`h-9 px-3 rounded-2xl flex items-center gap-2 transition-all font-black text-[9px] uppercase tracking-widest ${
                                                             isInCart(course._id)
                                                             ? 'bg-primary text-white shadow-lg shadow-primary/20'
                                                             : 'bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary/40'
@@ -342,7 +342,7 @@ const CandidateCurriculums = () => {
                                                 {!enrolled && (
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); navigate(`/courses/view/${course._id}`); }}
-                                                        className="h-11 rounded-xl border border-slate-100 bg-white text-slate-500 font-black text-[9px] uppercase tracking-widest hover:bg-slate-50 hover:text-slate-900 transition-all flex items-center justify-center gap-2 group/prev"
+                                                        className="h-11 rounded-2xl border border-slate-100 bg-white text-slate-500 font-black text-[9px] uppercase tracking-widest hover:bg-slate-50 hover:text-slate-900 transition-all flex items-center justify-center gap-2 group/prev"
                                                     >
                                                         <Eye size={14} className="group-hover/prev:scale-110 transition-transform" />
                                                         Preview
@@ -354,9 +354,9 @@ const CandidateCurriculums = () => {
                                                         enrolled ? navigate(`/courses/view/${course._id}`) : handleEnrollClick(course);
                                                     }}
                                                     disabled={enrollingId === course._id}
-                                                    className={`h-11 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-sm ${
+                                                    className={`h-11 rounded-2xl font-black text-[9px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-sm ${
                                                         enrolled 
-                                                        ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100' 
+                                                        ? 'bg-accent/5 text-accent border border-accent/10 hover:bg-accent/10' 
                                                         : 'bg-primary text-white shadow-xl shadow-primary/20 hover:bg-primary/90'
                                                     }`}
                                                 >
@@ -385,7 +385,7 @@ const CandidateCurriculums = () => {
                                                     hover: { opacity: 1, y: -80, scale: 1 }
                                                 }}
                                                 transition={{ type: "spring", damping: 20, stiffness: 200 }}
-                                                className="bg-slate-900/95 backdrop-blur-xl p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10 flex flex-col gap-4 w-full max-w-[280px] mx-auto relative group-hover:pointer-events-auto"
+                                                className="bg-secondary/95 backdrop-blur-xl p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10 flex flex-col gap-4 w-full max-w-[280px] mx-auto relative group-hover:pointer-events-auto"
                                             >
                                                 <div className="flex justify-between items-start">
                                                     <div className="space-y-0.5">
@@ -413,7 +413,7 @@ const CandidateCurriculums = () => {
                                                 </div>
 
                                                 {/* Tooltip Triangle */}
-                                                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-900/95 rotate-45 border-r border-b border-white/10" />
+                                                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-secondary/95 rotate-45 border-r border-b border-white/10" />
                                             </motion.div>
                                         </div>
                                     </motion.div>
@@ -436,7 +436,7 @@ const CandidateCurriculums = () => {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setShowEnrollModal(false)}
-                            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+                            className="absolute inset-0 bg-secondary/40 backdrop-blur-sm"
                         />
                         <motion.div 
                             initial={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -462,7 +462,7 @@ const CandidateCurriculums = () => {
 
                             <div className="p-10 space-y-10">
                                 {/* Course Preview Card */}
-                                <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 flex gap-6">
+                                <div className="p-8 bg-slate-50 rounded-2xl border border-slate-100 flex gap-6">
                                     <div className="w-24 h-24 rounded-2xl bg-white border border-slate-100 flex-shrink-0 flex items-center justify-center text-primary relative overflow-hidden">
                                         {selectedCourse.thumbnail ? (
                                             <img src={selectedCourse.thumbnail} alt="" className="w-full h-full object-cover" />
@@ -497,16 +497,16 @@ const CandidateCurriculums = () => {
                                                     size="large"
                                                 />
                                             ) : (
-                                                <p className="text-3xl font-black text-emerald-500 tracking-tight mt-2">FREE</p>
+                                                <p className="text-3xl font-black text-accent tracking-tight mt-2">FREE</p>
                                             )}
                                         </div>
                                         {selectedCourse.price > 0 ? (
-                                            <div className="flex items-center gap-2 text-amber-600 bg-amber-50 px-4 py-2 rounded-xl border border-amber-100/50">
+                                            <div className="flex items-center gap-2 text-amber-600 bg-amber-50 px-4 py-2 rounded-2xl border border-amber-100/50">
                                                 <Lock size={16} />
                                                 <span className="text-[10px] font-black uppercase tracking-widest">Paid Tier</span>
                                             </div>
                                         ) : (
-                                            <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-100/50">
+                                            <div className="flex items-center gap-2 text-accent bg-accent/5 px-4 py-2 rounded-2xl border border-accent/10">
                                                 <Ticket size={16} />
                                                 <span className="text-[10px] font-black uppercase tracking-widest">Free Access</span>
                                             </div>
@@ -518,9 +518,9 @@ const CandidateCurriculums = () => {
                                 <button 
                                     onClick={confirmEnrollment}
                                     disabled={enrollingId === selectedCourse._id}
-                                    className={`w-full h-16 rounded-[1.5rem] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3 shadow-2xl ${
+                                    className={`w-full h-16 rounded-2xl font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3 shadow-2xl ${
                                         selectedCourse.price > 0 
-                                        ? 'bg-slate-900 text-white hover:bg-black shadow-slate-200' 
+                                        ? 'bg-secondary text-white hover:bg-secondary/90 shadow-secondary/20' 
                                         : 'bg-primary text-white hover:bg-primary/90 shadow-primary/20'
                                     }`}
                                 >

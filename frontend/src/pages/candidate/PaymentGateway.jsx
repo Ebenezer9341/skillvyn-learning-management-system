@@ -126,9 +126,9 @@ const PaymentGateway = () => {
                 <motion.div 
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="bg-white p-12 rounded-[3rem] shadow-2xl shadow-emerald-500/10 text-center max-w-md w-full border border-emerald-100"
+                    className="bg-white p-12 rounded-2xl shadow-2xl shadow-accent/10 text-center max-w-md w-full border border-accent/10"
                 >
-                    <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500 mx-auto mb-8">
+                    <div className="w-24 h-24 bg-accent/5 rounded-full flex items-center justify-center text-accent mx-auto mb-8">
                         <CheckCircle2 size={48} />
                     </div>
                     <h2 className="text-3xl font-black text-slate-900 mb-4">Payment Confirmed!</h2>
@@ -159,7 +159,7 @@ const PaymentGateway = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
                     {/* Left Side: Summary */}
                     <div className="lg:col-span-2 space-y-8">
-                        <div className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50">
+                        <div className="bg-white p-10 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50">
                             <h2 className="text-2xl font-black text-slate-900 mb-8 tracking-tight">Purchase Summary</h2>
                             <div className="space-y-6">
                                 <div className="space-y-2">
@@ -177,12 +177,12 @@ const PaymentGateway = () => {
                                             value={couponCode}
                                             onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                                             disabled={appliedCoupon || isApplyingCoupon}
-                                            className="flex-1 h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase placeholder:text-slate-300 text-sm"
+                                            className="flex-1 h-12 bg-slate-50 border border-slate-100 rounded-2xl px-4 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase placeholder:text-slate-300 text-sm"
                                         />
                                         {appliedCoupon ? (
                                             <button 
                                                 onClick={handleRemoveCoupon}
-                                                className="px-4 h-12 bg-red-50 text-red-500 rounded-xl font-black text-[10px] uppercase hover:bg-red-100 transition-colors"
+                                                className="px-4 h-12 bg-red-50 text-red-500 rounded-2xl font-black text-[10px] uppercase hover:bg-red-100 transition-colors"
                                             >
                                                 Remove
                                             </button>
@@ -190,14 +190,14 @@ const PaymentGateway = () => {
                                             <button 
                                                 onClick={handleApplyCoupon}
                                                 disabled={!couponCode || isApplyingCoupon}
-                                                className="px-6 h-12 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase hover:bg-black transition-all disabled:opacity-50"
+                                                className="px-6 h-12 bg-secondary text-white rounded-2xl font-black text-[10px] uppercase hover:bg-secondary/90 transition-all disabled:opacity-50"
                                             >
                                                 {isApplyingCoupon ? <Loader2 size={16} className="animate-spin" /> : 'Apply'}
                                             </button>
                                         )}
                                     </div>
                                     {appliedCoupon && (
-                                        <p className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                                        <p className="text-[10px] text-accent font-bold flex items-center gap-1">
                                             <CheckCircle2 size={12} />
                                             Saved ₹{discountAmount.toLocaleString()} with {appliedCoupon.code}
                                         </p>
@@ -213,14 +213,14 @@ const PaymentGateway = () => {
                                             size="large" 
                                         />
                                     </div>
-                                    <div className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black border border-emerald-100 uppercase tracking-widest">
+                                    <div className="px-3 py-1 bg-accent/5 text-accent rounded-full text-[10px] font-black border border-accent/10 uppercase tracking-widest">
                                         Secure Payment
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-primary/5 p-8 rounded-[2rem] border border-primary/10 space-y-4">
+                        <div className="bg-primary/5 p-8 rounded-2xl border border-primary/10 space-y-4">
                             <div className="flex items-center gap-3 text-primary">
                                 <ShieldCheck size={24} />
                                 <span className="text-sm font-black uppercase tracking-widest">Skillvyn Secure Guarantee</span>
@@ -233,7 +233,7 @@ const PaymentGateway = () => {
 
                     {/* Right Side: Form */}
                     <div className="lg:col-span-3">
-                        <div className="bg-white p-12 rounded-[3.5rem] shadow-2xl shadow-slate-200 border border-white relative overflow-hidden">
+                        <div className="bg-white p-12 rounded-2xl shadow-2xl shadow-slate-200 border border-white relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16" />
                             
                             <div className="flex items-center justify-between mb-12">
@@ -309,7 +309,7 @@ const PaymentGateway = () => {
                                 <button 
                                     type="submit"
                                     disabled={processing}
-                                    className="w-full h-16 bg-slate-900 text-white rounded-[1.5rem] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-black transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-slate-300 disabled:opacity-70 disabled:hover:scale-100"
+                                    className="w-full h-16 bg-secondary text-white rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-secondary/90 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-secondary/20 disabled:opacity-70 disabled:hover:scale-100"
                                 >
                                     {processing ? (
                                         <>

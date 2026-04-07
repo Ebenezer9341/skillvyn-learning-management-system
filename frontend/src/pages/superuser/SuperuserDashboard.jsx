@@ -30,11 +30,11 @@ const getRelativeTime = (date) => {
 
 const getActionColor = (action) => {
     switch (action?.toUpperCase()) {
-        case 'LOGIN': return 'bg-emerald-50 text-emerald-600';
-        case 'CREATE': return 'bg-blue-50 text-blue-600';
-        case 'UPDATE': return 'bg-amber-50 text-amber-600';
-        case 'DELETE': return 'bg-rose-50 text-rose-600';
-        default: return 'bg-slate-50 text-slate-600';
+        case 'LOGIN': return 'bg-accent/10 text-accent font-bold';
+        case 'CREATE': return 'bg-primary/10 text-primary font-bold';
+        case 'UPDATE': return 'bg-accent/10 text-accent font-bold';
+        case 'DELETE': return 'bg-secondary/10 text-secondary font-bold';
+        default: return 'bg-slate-50 text-slate-600 font-bold';
     }
 };
 
@@ -65,32 +65,40 @@ const SuperuserDashboard = () => {
             value: data?.stats?.totalUsers || '0', 
             icon: Users, 
             change: `+${data?.stats?.newUsersThisWeek || 0}`, 
-            colorClass: 'text-blue-600',
-            bgClass: 'bg-blue-50' 
+            colorClass: 'text-primary',
+            bgClass: 'bg-primary/10',
+            navigateTo: '/superuser/users'
         },
         { 
             label: 'Total Courses', 
             value: data?.stats?.totalCourses || '0', 
             icon: BookOpen, 
-            change: 'Live', 
-            colorClass: 'text-emerald-600',
-            bgClass: 'bg-emerald-50' 
+            badges: [
+                { text: `${data?.stats?.draftCourses || 0} Draft`, type: 'secondary' },
+                { text: `${data?.stats?.publishedCourses || 0} Live`, type: 'primary' },
+                { text: `${data?.stats?.archivedCourses || 0} Archived`, type: 'secondary' }
+            ],
+            colorClass: 'text-accent',
+            bgClass: 'bg-accent/10',
+            navigateTo:'/superuser/courses'
         },
         { 
             label: 'Mentors', 
             value: data?.stats?.totalMentors || '0', 
             icon: UserCheck, 
             change: 'Verified', 
-            colorClass: 'text-amber-600',
-            bgClass: 'bg-amber-50' 
+            colorClass: 'text-secondary',
+            bgClass: 'bg-secondary/10',
+            navigateTo: '/superuser/mentors'
         },
         { 
             label: 'Candidates', 
             value: data?.stats?.totalCandidates || '0', 
             icon: ShieldCheck, 
             change: 'Active', 
-            colorClass: 'text-purple-600',
-            bgClass: 'bg-purple-50' 
+            colorClass: 'text-primary',
+            bgClass: 'bg-primary/10',
+            navigateTo:'/superuser/candidates'
         },
     ];
 
@@ -104,7 +112,7 @@ const SuperuserDashboard = () => {
                 </div>
                 <button 
                     onClick={fetchDashboardData}
-                    className="p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all text-slate-400 group"
+                    className="p-2.5 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all text-slate-400 group"
                     title="Refresh Stats"
                 >
                     <RefreshCw size={20} className={loading ? 'animate-spin' : 'group-active:rotate-180 transition-transform'} />
@@ -119,18 +127,31 @@ const SuperuserDashboard = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: idx * 0.1 }}
-                        className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow"
+                        className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                        onClick={() => navigate(stat.navigateTo)}
                     >
                         <div className="flex justify-between items-start mb-4">
                             {/* Icon Container with fixed background and text colors */}
-                            <div className={`${stat.bgClass} p-3 rounded-xl flex items-center justify-center`}>
+                            <div className={`${stat.bgClass} p-3 rounded-2xl flex items-center justify-center`}>
                                 <stat.icon size={24} className={stat.colorClass} />
                             </div>
-                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                                stat.change.startsWith('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
-                            }`}>
-                                {stat.change}
-                            </span>
+                            {stat.badges ? (
+                                <div className="flex flex-col gap-1 items-end">
+                                    {stat.badges.map((badge, bIdx) => (
+                                        <span key={bIdx} className={`text-[10px] font-black uppercase tracking-tighter px-2 py-1 rounded-full ${
+                                            badge.type === 'primary' ? 'bg-primary/5 text-primary' : 'bg-secondary/5 text-secondary'
+                                        }`}>
+                                            {badge.text}
+                                        </span>
+                                    ))}
+                                </div>
+                            ) : (
+                                <span className={`text-[10px] font-black uppercase tracking-tighter px-2 py-1 rounded-full ${
+                                    stat.change?.startsWith('+') ? 'bg-primary/5 text-primary' : 'bg-secondary/5 text-secondary'
+                                }`}>
+                                    {stat.change}
+                                </span>
+                            )}
                         </div>
                         <h3 className="text-slate-500 text-sm font-medium">{stat.label}</h3>
                         <p className="text-xl md:text-2xl font-bold text-slate-900 mt-1">{stat.value}</p>

@@ -4,7 +4,7 @@ import AppError from "../utils/appError.js";
 import httpStatus from "../utils/httpStatus.js";
 import { logActivity } from "../utils/logger.js";
 import Email from "../utils/email.js";
-
+import crypto from "crypto";
 import Course from "../models/Course.model.js";
 import Enrollment from "../models/Enrollment.model.js";
 
@@ -36,7 +36,7 @@ export const getMe = catchAsync(async (req, res, next) => {
         };
     } else if (user.role === 'candidate') {
         const enrollments = await Enrollment.find({ candidate: user._id });
-        
+
         stats = {
             enrolledCount: enrollments.length,
             completedCount: enrollments.filter(e => e.status === 'completed').length,
@@ -59,14 +59,14 @@ export const getMe = catchAsync(async (req, res, next) => {
 export const updateProfile = catchAsync(async (req, res, next) => {
     // Only allow updating specific fields
     const allowedFields = [
-        'firstName', 
-        'lastName', 
-        'bio', 
-        'phone', 
-        'location', 
-        'specialty', 
-        'avatar', 
-        'cover', 
+        'firstName',
+        'lastName',
+        'bio',
+        'phone',
+        'location',
+        'specialty',
+        'avatar',
+        'cover',
         'socialLinks',
         'dateOfBirth',
         'notificationSettings'
@@ -91,7 +91,7 @@ export const updateProfile = catchAsync(async (req, res, next) => {
         action: 'UPDATE',
         resource: 'PROFILE',
         resourceId: user._id,
-        details: { 
+        details: {
             updatedFields: Object.keys(updateData)
         }
     }, req);
@@ -159,9 +159,18 @@ export const createUser = catchAsync(async (req, res, next) => {
         lastName,
         dateOfBirth,
         email,
-        password,
-        role: assignedRole
+        password,       // still needed to satisfy the required field
+        role: assignedRole,
+        isEmailVerified: true  // Admin-created accounts are pre-trusted; they use the password-setup flow
     });
+
+    // Generate a password setup token (same pattern as forgotPassword)
+    const setupToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(setupToken).digest('hex');
+
+    newUser.passwordResetToken = hashedToken;
+    newUser.passwordResetExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+    await newUser.save({ validateBeforeSave: false });
 
     newUser.password = undefined;
 
@@ -171,17 +180,18 @@ export const createUser = catchAsync(async (req, res, next) => {
         action: 'CREATE',
         resource: 'USER',
         resourceId: newUser._id,
-        details: { 
-            email: newUser.email, 
-            role: newUser.role 
+        details: {
+            email: newUser.email,
+            role: newUser.role
         }
     }, req);
 
     // Send Staff Welcome Email (Don't await, let it happen in background)
     if (newUser.notificationSettings?.emailAlerts) {
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-        const loginUrl = `${frontendUrl}/login`;
-        new Email(newUser, loginUrl).sendStaffWelcome(password).catch(err => {
+        // ✅ Fixed
+        const setupUrl = `${frontendUrl}/reset-password?token=${setupToken}`;
+        new Email(newUser, setupUrl).sendStaffWelcome().catch(err => {
             console.error("Staff welcome email failed:", err);
         });
     }
@@ -232,7 +242,7 @@ export const updateUser = catchAsync(async (req, res, next) => {
         action: 'UPDATE',
         resource: 'USER',
         resourceId: user._id,
-        details: { 
+        details: {
             updatedFields: Object.keys(req.body).filter(k => req.body[k] !== undefined)
         }
     }, req);
@@ -254,7 +264,7 @@ export const uploadAvatar = catchAsync(async (req, res, next) => {
     }
 
     const imageUrl = `/uploads/profiles/avatars/${req.file.filename}`;
-    
+
     const user = await User.findByIdAndUpdate(
         req.user._id,
         { avatar: imageUrl },
@@ -288,15 +298,15 @@ export const uploadCover = catchAsync(async (req, res, next) => {
     }
 
     const imageUrl = `/uploads/profiles/covers/${req.file.filename}`;
-    
+
     const user = await User.findByIdAndUpdate(
         req.user._id,
         { cover: imageUrl },
         { returnDocument: 'after' }
     );
 
-     // Record Activity
-     await logActivity({
+    // Record Activity
+    await logActivity({
         userId: req.user._id,
         userRole: req.user.role,
         action: 'UPDATE',
@@ -346,7 +356,7 @@ export const getUser = catchAsync(async (req, res, next) => {
         };
     } else if (user.role === 'candidate') {
         const enrollments = await Enrollment.find({ candidate: user._id });
-        
+
         stats = {
             enrolledCount: enrollments.length,
             completedCount: enrollments.filter(e => e.status === 'completed').length,

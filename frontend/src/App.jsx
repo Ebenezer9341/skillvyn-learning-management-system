@@ -8,6 +8,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import CourseCatelog from './pages/CourseCatalog';
+import VerifyEmail from './pages/VerifyEmail';
 
 // Superuser Pages
 import SuperuserDashboard from './pages/superuser/SuperuserDashboard';
@@ -43,7 +47,7 @@ import MentorDashboard from './pages/mentor/MentorDashboard';
 import MentorCourses from './pages/mentor/MentorCourses';
 import MentorBundles from './pages/mentor/MentorBundles';
 import MentorProfile from './pages/mentor/MentorProfile';
-import MentorStudents from './pages/mentor/MentorStudents'; 
+import MentorStudents from './pages/mentor/MentorStudents';
 import MentorReviews from './pages/mentor/MentorReviews';
 import MentorAuditLog from './pages/mentor/MentorAuditLog';
 import MentorCourseEditor from './pages/mentor/MentorCourseEditor';
@@ -65,6 +69,7 @@ import UserProfileView from './pages/shared/UserProfileView';
 import PlatformInsights from './pages/shared/PlatformInsights';
 import StudentInvoices from './pages/shared/StudentInvoices';
 import AllInvoices from './pages/shared/AllInvoices';
+import Notifications from './pages/shared/Notifications';
 import AdminStudents from './pages/admin/AdminStudents';
 import CandidateCourseForum from './pages/candidate/CandidateCourseForum';
 
@@ -77,110 +82,121 @@ import CertificationHub from './components/shared/CertificationHub';
 // Contexts
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { NotificationProvider } from './context/NotificationContext';
 
 function App() {
     return (
         <AuthProvider>
             <CartProvider>
-                <Router>
-                    <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop />
-                    <Routes>
-                        {/* Public Routes */}
-                        <Route path="/" element={<Home />} />
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/register" element={<Register />} />
+                <NotificationProvider>
+                    <Router>
+                        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop />
+                        <Routes>
+                            {/* Public Routes */}
+                            <Route path="/" element={<Home />} />
+                            <Route path="/login" element={<Login />} />
+                            <Route path="/register" element={<Register />} />
+                            <Route path="/forgot-password" element={<ForgotPassword />} />
+                            <Route path="/reset-password" element={<ResetPassword />} />
+                            <Route path="/verify-email" element={<VerifyEmail />} />
+                            <Route path="/course-catalog" element={<CourseCatelog />} />
 
-                        {/* Superuser Protected Routes */}
-                        <Route element={<ProtectedRoute allowedRoles={['superuser']} />}>
-                            <Route element={<Layout />}>
-                                <Route path="/superuser" element={<SuperuserDashboard />} />
-                                <Route path="/superuser/users" element={<SuperuserUserManagement />} />
-                                <Route path="/superuser/mentors" element={<SuperuserMentors />} />
-                                <Route path="/superuser/students" element={<SuperuserStudents />} />
-                                <Route path="/superuser/user/:id" element={<UserProfileView />} />
-                                <Route path="/superuser/auditLogs" element={<SuperuserAuditLog />} />
-                                <Route path="/superuser/analytics/platform" element={<PlatformInsights />} />
-                                <Route path="/superuser/courses" element={<SuperuserCourses />} />
-                                <Route path="/superuser/bundles" element={<SuperuserBundles />} />
-                                <Route path="/superuser/course/analytics/:id" element={<SuperuserCourseAnalytics />} />
-                                <Route path="/superuser/course/forum/:courseId" element={<SuperuserCourseForum />} />
-                                <Route path="/superuser/course/:id" element={<SuperuserCourseEditor />} />
-                                <Route path="/superuser/reviews" element={<SuperuserReviews />} />
-                                <Route path="/superuser/invoices" element={<AllInvoices />} />
-                                <Route path="/superuser/invoices/:candidateId" element={<StudentInvoices />} />
-                                <Route path="/superuser/coupons" element={<SuperuserCoupons />} />
-                                <Route path="/superuser/profile" element={<SuperuserProfile />} />
+                            {/* Superuser Protected Routes */}
+                            <Route element={<ProtectedRoute allowedRoles={['superuser']} />}>
+                                <Route element={<Layout />}>
+                                    <Route path="/superuser" element={<SuperuserDashboard />} />
+                                    <Route path="/superuser/users" element={<SuperuserUserManagement />} />
+                                    <Route path="/superuser/mentors" element={<SuperuserMentors />} />
+                                    <Route path="/superuser/candidates" element={<SuperuserStudents />} />
+                                    <Route path="/superuser/user/:id" element={<UserProfileView />} />
+                                    <Route path="/superuser/auditLogs" element={<SuperuserAuditLog />} />
+                                    <Route path="/superuser/analytics/platform" element={<PlatformInsights />} />
+                                    <Route path="/superuser/courses" element={<SuperuserCourses />} />
+                                    <Route path="/superuser/notifications" element={<Notifications />} />
+                                    <Route path="/superuser/bundles" element={<SuperuserBundles />} />
+                                    <Route path="/superuser/course/analytics/:id" element={<SuperuserCourseAnalytics />} />
+                                    <Route path="/superuser/course/forum/:courseId" element={<SuperuserCourseForum />} />
+                                    <Route path="/superuser/course/:id" element={<SuperuserCourseEditor />} />
+                                    <Route path="/superuser/reviews" element={<SuperuserReviews />} />
+                                    <Route path="/superuser/invoices" element={<AllInvoices />} />
+                                    <Route path="/superuser/invoices/:candidateId" element={<StudentInvoices />} />
+                                    <Route path="/superuser/coupons" element={<SuperuserCoupons />} />
+                                    <Route path="/superuser/profile" element={<SuperuserProfile />} />
+                                </Route>
                             </Route>
-                        </Route>
 
-                        {/* Admin Protected Routes */}
-                        <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-                            <Route element={<Layout />}>
-                                <Route path="/admin" element={<AdminDashboard />} />
-                                <Route path="/admin/users" element={<AdminUserManagement />} />
-                                <Route path="/admin/mentors" element={<AdminMentors />} />
-                                <Route path="/admin/students" element={<AdminStudents />} />
-                                <Route path="/admin/user/:id" element={<UserProfileView />} />
-                                <Route path="/admin/auditLogs" element={<AdminAuditLog />} />
-                                <Route path="/admin/analytics/platform" element={<PlatformInsights />} />
-                                <Route path="/admin/courses" element={<AdminCourses />} />
-                                <Route path="/admin/bundles" element={<AdminBundles />} />
-                                <Route path="/admin/course/analytics/:id" element={<AdminCourseAnalytics />} />
-                                <Route path="/admin/course/forum/:courseId" element={<AdminCourseForum />} />
-                                <Route path="/admin/course/:id" element={<AdminCourseEditor />} />
-                                <Route path="/admin/reviews" element={<AdminReviews />} />
-                                <Route path="/admin/invoices" element={<AllInvoices />} />
-                                <Route path="/admin/invoices/:candidateId" element={<StudentInvoices />} />
-                                <Route path="/admin/coupons" element={<AdminCoupons />} />
-                                <Route path="/admin/profile" element={<AdminProfile />} />
+                            {/* Admin Protected Routes */}
+                            <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+                                <Route element={<Layout />}>
+                                    <Route path="/admin" element={<AdminDashboard />} />
+                                    <Route path="/admin/users" element={<AdminUserManagement />} />
+                                    <Route path="/admin/mentors" element={<AdminMentors />} />
+                                    <Route path="/admin/candidates" element={<AdminStudents />} />
+                                    <Route path="/admin/user/:id" element={<UserProfileView />} />
+                                    <Route path="/admin/auditLogs" element={<AdminAuditLog />} />
+                                    <Route path="/admin/analytics/platform" element={<PlatformInsights />} />
+                                    <Route path="/admin/courses" element={<AdminCourses />} />
+                                    <Route path="/admin/notifications" element={<Notifications />} />
+                                    <Route path="/admin/bundles" element={<AdminBundles />} />
+                                    <Route path="/admin/course/analytics/:id" element={<AdminCourseAnalytics />} />
+                                    <Route path="/admin/course/forum/:courseId" element={<AdminCourseForum />} />
+                                    <Route path="/admin/course/:id" element={<AdminCourseEditor />} />
+                                    <Route path="/admin/reviews" element={<AdminReviews />} />
+                                    <Route path="/admin/invoices" element={<AllInvoices />} />
+                                    <Route path="/admin/invoices/:candidateId" element={<StudentInvoices />} />
+                                    <Route path="/admin/coupons" element={<AdminCoupons />} />
+                                    <Route path="/admin/profile" element={<AdminProfile />} />
+                                </Route>
                             </Route>
-                        </Route>
 
-                        {/* Mentor Protected Routes */}
-                        <Route element={<ProtectedRoute allowedRoles={['mentor']} />}>
-                            <Route element={<Layout />}>
-                                <Route path="/mentor" element={<MentorDashboard />} />
-                                <Route path="/mentor/students" element={<MentorStudents />} />
-                                <Route path="/mentor/audit-logs" element={<MentorAuditLog />} />
-                                <Route path="/mentor/courses" element={<MentorCourses />} />
-                                <Route path="/mentor/bundles" element={<MentorBundles />} />
-                                <Route path="/mentor/course/analytics/:id" element={<MentorCourseAnalytics />} />
-                                <Route path="/mentor/course/forum/:courseId" element={<MentorCourseForum />} />
-                                <Route path="/mentor/course/:id" element={<MentorCourseEditor />} />
-                                <Route path="/mentor/reviews" element={<MentorReviews />} />
-                                <Route path="/mentor/invoices" element={<AllInvoices />} />
-                                <Route path="/mentor/invoices/:candidateId" element={<StudentInvoices />} />
-                                <Route path="/mentor/coupons" element={<MentorCoupons />} />
-                                <Route path="/mentor/profile" element={<MentorProfile />} />
+                            {/* Mentor Protected Routes */}
+                            <Route element={<ProtectedRoute allowedRoles={['mentor']} />}>
+                                <Route element={<Layout />}>
+                                    <Route path="/mentor" element={<MentorDashboard />} />
+                                    <Route path="/mentor/notifications" element={<Notifications />} />
+                                    <Route path="/mentor/candidates" element={<MentorStudents />} />
+                                    <Route path="/mentor/audit-logs" element={<MentorAuditLog />} />
+                                    <Route path="/mentor/courses" element={<MentorCourses />} />
+                                    <Route path="/mentor/bundles" element={<MentorBundles />} />
+                                    <Route path="/mentor/course/analytics/:id" element={<MentorCourseAnalytics />} />
+                                    <Route path="/mentor/course/forum/:courseId" element={<MentorCourseForum />} />
+                                    <Route path="/mentor/course/:id" element={<MentorCourseEditor />} />
+                                    <Route path="/mentor/reviews" element={<MentorReviews />} />
+                                    <Route path="/mentor/invoices" element={<AllInvoices />} />
+                                    <Route path="/mentor/invoices/:candidateId" element={<StudentInvoices />} />
+                                    <Route path="/mentor/coupons" element={<MentorCoupons />} />
+                                    <Route path="/mentor/profile" element={<MentorProfile />} />
+                                </Route>
                             </Route>
-                        </Route>
 
-                        {/* Immersive Course Viewer — No Layout */}
-                        <Route element={<ProtectedRoute allowedRoles={['mentor', 'candidate', 'admin', 'superuser']} />}>
-                            <Route path="/courses/view/:id" element={<CourseViewer />} />
-                            <Route path="/courses/certification/:id" element={<CertificationHub />} />
-                            <Route path="/courses/certificate/:id" element={<Certificate />} />
-                        </Route>
-
-                        {/* Candidate Protected Routes */}
-                        <Route element={<ProtectedRoute allowedRoles={['candidate']} />}>
-                            <Route element={<Layout />}>
-                                <Route path="/candidate" element={<CandidateCurriculums />} />
-                                <Route path="/candidate/courses" element={<CandidateCourses />} />
-                                <Route path="/candidate/bundles" element={<CandidateBundles />} />
-                                <Route path="/candidate/achievements" element={<CandidateAchievements />} />
-                                <Route path="/candidate/profile" element={<CandidateProfile />} />
-                                <Route path="/candidate/payment" element={<PaymentGateway />} />
-                                <Route path="/candidate/cart/checkout" element={<CartCheckout />} />
-                                <Route path="/candidate/purchases" element={<CandidatePurchases />} />
-                                <Route path="/candidate/course/forum/:courseId" element={<CandidateCourseForum />} />
+                            {/* Immersive Course Viewer — No Layout */}
+                            <Route element={<ProtectedRoute allowedRoles={['mentor', 'candidate', 'admin', 'superuser']} />}>
+                                <Route path="/courses/view/:id" element={<CourseViewer />} />
+                                <Route path="/courses/certification/:id" element={<CertificationHub />} />
+                                <Route path="/courses/certificate/:id" element={<Certificate />} />
                             </Route>
-                        </Route>
 
-                        {/* Catch-all Redirect */}
-                        <Route path="*" element={<Navigate to="/" replace />} />
-                    </Routes>
-                </Router>
+                            {/* Candidate Protected Routes */}
+                            <Route element={<ProtectedRoute allowedRoles={['candidate']} />}>
+                                <Route element={<Layout />}>
+                                    <Route path="/candidate" element={<CandidateCurriculums />} />
+                                    <Route path="/candidate/notifications" element={<Notifications />} />
+                                    <Route path="/candidate/courses" element={<CandidateCourses />} />
+                                    <Route path="/candidate/bundles" element={<CandidateBundles />} />
+                                    <Route path="/candidate/achievements" element={<CandidateAchievements />} />
+                                    <Route path="/candidate/profile" element={<CandidateProfile />} />
+                                    <Route path="/candidate/payment" element={<PaymentGateway />} />
+                                    <Route path="/candidate/cart/checkout" element={<CartCheckout />} />
+                                    <Route path="/candidate/purchases" element={<CandidatePurchases />} />
+                                    <Route path="/candidate/course/forum/:courseId" element={<CandidateCourseForum />} />
+                                </Route>
+                            </Route>
+
+                            {/* Catch-all Redirect */}
+                            <Route path="*" element={<Navigate to="/" replace />} />
+                        </Routes>
+                    </Router>
+                </NotificationProvider>
             </CartProvider>
         </AuthProvider>
     );

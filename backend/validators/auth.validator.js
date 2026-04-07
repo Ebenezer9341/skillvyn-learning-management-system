@@ -18,3 +18,25 @@ export const loginValidation = [
     body("email").isEmail().withMessage("Please provide a valid email address").normalizeEmail(),
     body("password").notEmpty().withMessage("Password is required")
 ];
+
+/**
+ * Validation rules for forgot password
+ */
+export const forgotPasswordValidation = [
+    body("email").isEmail().withMessage("Please provide a valid email address").normalizeEmail()
+];
+
+/**
+ * Validation rules for reset password
+ */
+export const resetPasswordValidation = [
+    body("token").notEmpty().withMessage("Reset token is required"),
+    body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters")
+];
+
+/**
+ * Validation rules for resend verification email
+ */
+export const resendVerificationValidation = [
+    body("email").isEmail().withMessage("Please provide a valid email address").normalizeEmail()
+];

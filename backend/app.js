@@ -8,6 +8,7 @@ import { fileURLToPath } from "url";
 import route from "./route.js"
 import AppError from "./utils/appError.js";
 import { apiRateLimiter } from "./middlewares/rateLimit.middleware.js";
+import startCouponCronJob from "./scripts/couponCron.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,16 +33,24 @@ app.use(cors(corsOptions));
 app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // Serve static files from uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 mongoose.connect(process.env.MONGO_URL)
-    .then(() => console.log("Connected to MongoDB"))
+    .then(() => {
+        console.log("Connected to MongoDB");
+        startCouponCronJob();
+    })
     .catch((err) => console.log(err));
 
-app.use('/api', apiRateLimiter);
+// ✅ AFTER
+app.use('/api', (req, res, next) => {
+    if (req.path.startsWith('/payments')) return next();
+    return apiRateLimiter(req, res, next);
+});
 app.use('/api', route);
 
 // 404 Handler

@@ -26,8 +26,8 @@ const CandidateAchievements = () => {
                         }),
                         instructor: `${en.course.instructor.firstName} ${en.course.instructor.lastName}`,
                         category: en.course.category,
-                        bgLight: 'bg-indigo-50',
-                        textColor: 'text-indigo-600'
+                        bgLight: 'bg-primary/5',
+                        textColor: 'text-primary'
                     }));
                 setCertificates(earnedCerts);
             } catch (err) {
@@ -43,7 +43,7 @@ const CandidateAchievements = () => {
         return (
             <div className="p-8 flex items-center justify-center min-h-[400px]">
                 <div className="text-center">
-                    <Loader2 size={40} className="animate-spin text-indigo-600 mx-auto mb-4" />
+                    <Loader2 size={40} className="animate-spin text-primary mx-auto mb-4" />
                     <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Loading Achievements...</p>
                 </div>
             </div>
@@ -67,19 +67,19 @@ const CandidateAchievements = () => {
                             key={cert.id}
                             className="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden"
                         >
-                            <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-indigo-50 opacity-50 blur-3xl group-hover:scale-150 transition-transform duration-700 pointer-events-none" />
+                            <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-primary/5 opacity-50 blur-3xl group-hover:scale-150 transition-transform duration-700 pointer-events-none" />
 
                             <div className="flex items-start justify-between mb-8 relative z-10">
-                                <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-xl shadow-indigo-100">
+                                <div className="w-16 h-16 rounded-2xl bg-primary text-white flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-xl shadow-primary/20">
                                     <Award size={32} />
                                 </div>
-                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-accent bg-accent/5 px-3 py-1.5 rounded-2xl border border-accent/10">
                                     Verified
                                 </span>
                             </div>
                             
                             <div className="relative z-10 flex-1 flex flex-col">
-                                <h3 className="text-xl font-black text-slate-900 mb-2 leading-tight group-hover:text-indigo-600 transition-colors">
+                                <h3 className="text-xl font-black text-slate-900 mb-2 leading-tight group-hover:text-primary transition-colors">
                                     {cert.title}
                                 </h3>
                                 <p className="text-[11px] font-bold text-slate-400 mb-4 uppercase tracking-widest">
@@ -97,14 +97,14 @@ const CandidateAchievements = () => {
                                     <div className="grid grid-cols-2 gap-3">
                                         <button 
                                             onClick={() => navigate(`/courses/certificate/${cert.id}`)}
-                                            className="flex items-center justify-center gap-2 py-4 px-4 rounded-xl bg-slate-50 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors border border-slate-100"
+                                            className="flex items-center justify-center gap-2 py-4 px-4 rounded-2xl bg-slate-50 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors border border-slate-100"
                                         >
                                             <ExternalLink size={14} />
                                             <span>View</span>
                                         </button>
                                         <button 
                                             onClick={() => navigate(`/courses/certificate/${cert.id}`)}
-                                            className="flex items-center justify-center gap-2 py-4 px-4 rounded-xl bg-indigo-600 text-white font-black text-xs hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-95"
+                                            className="flex items-center justify-center gap-2 py-4 px-4 rounded-2xl bg-primary text-white font-black text-xs hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all active:scale-95"
                                         >
                                             <Download size={14} />
                                             <span>PDF</span>
@@ -116,8 +116,8 @@ const CandidateAchievements = () => {
                     ))}
                 </div>
             ) : (
-                <div className="bg-white border border-slate-100 rounded-[3rem] p-20 text-center flex flex-col items-center justify-center shadow-sm">
-                    <div className="w-24 h-24 bg-slate-50 rounded-[2rem] flex items-center justify-center text-slate-200 mb-6 border border-slate-100">
+                <div className="bg-white border border-slate-100 rounded-2xl p-20 text-center flex flex-col items-center justify-center shadow-sm">
+                    <div className="w-24 h-24 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-200 mb-6 border border-slate-100">
                         <Award size={48} />
                     </div>
                     <h3 className="text-2xl font-black text-slate-900 mb-2">The Vault is Empty</h3>
@@ -126,7 +126,7 @@ const CandidateAchievements = () => {
                     </p>
                     <button 
                         onClick={() => navigate('/candidate')}
-                        className="mt-8 px-8 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-slate-200"
+                        className="mt-8 px-8 py-4 bg-secondary text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-secondary/90 transition-all shadow-xl shadow-secondary/20"
                     >
                         Browse Courses
                     </button>

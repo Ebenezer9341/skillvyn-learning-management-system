@@ -97,7 +97,7 @@ const AllInvoices = () => {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh]">
-                <Loader2 size={32} className="animate-spin text-indigo-600" />
+                <Loader2 size={32} className="animate-spin text-primary" />
                 <p className="text-slate-400 font-black mt-4 text-[10px] uppercase tracking-[0.2em]">Synchronizing Revenue Data...</p>
             </div>
         );
@@ -115,7 +115,7 @@ const AllInvoices = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group">
                     <div className="flex justify-between items-start mb-4">
-                        <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center inner-shadow">
+                        <div className="w-12 h-12 rounded-2xl bg-primary/5 text-primary flex items-center justify-center inner-shadow">
                             <IndianRupee size={24} strokeWidth={2.5} />
                         </div>
                         <TrendingUp size={16} className="text-emerald-500" />
@@ -127,9 +127,9 @@ const AllInvoices = () => {
                     </p>
                 </div>
 
-                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
                     <div className="flex justify-between items-start mb-4">
-                        <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center inner-shadow">
+                        <div className="w-12 h-12 rounded-2xl bg-accent/5 text-accent flex items-center justify-center inner-shadow">
                             <ReceiptText size={24} />
                         </div>
                     </div>
@@ -137,9 +137,9 @@ const AllInvoices = () => {
                     <p className="text-2xl font-black text-slate-900 mt-1">{stats?.successCount}</p>
                 </div>
 
-                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
                     <div className="flex justify-between items-start mb-4">
-                        <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center inner-shadow">
+                        <div className="w-12 h-12 rounded-2xl bg-secondary/5 text-secondary flex items-center justify-center inner-shadow">
                             <Users size={24} />
                         </div>
                     </div>
@@ -147,9 +147,9 @@ const AllInvoices = () => {
                     <p className="text-2xl font-black text-slate-900 mt-1">{[...new Set(transactions.map(t => t.candidate?._id))].length}</p>
                 </div>
 
-                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
                     <div className="flex justify-between items-start mb-4">
-                        <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center inner-shadow">
+                        <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center inner-shadow">
                             <AlertCircle size={24} />
                         </div>
                     </div>
@@ -169,7 +169,7 @@ const AllInvoices = () => {
                         <input 
                             type="text" 
                             placeholder="Search by invoice #, candidate name, or course title..."
-                            className="w-full pl-14 pr-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:ring-4 focus:ring-indigo-100/50 transition-all placeholder:text-slate-300 inner-shadow"
+                            className="w-full pl-14 pr-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:ring-4 focus:ring-primary/5 transition-all placeholder:text-slate-300 inner-shadow"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -221,13 +221,13 @@ const AllInvoices = () => {
                                             onClick={() => navigate(`/${user.role}/invoices/${tx.candidate?._id}`)}
                                             className="text-left group/name cursor-pointer"
                                         >
-                                            <p className="text-sm font-black text-slate-900 group-hover/name:text-indigo-600 transition-colors cursor-pointer">{tx.candidate?.firstName} {tx.candidate?.lastName}</p>
-                                            <p className="text-[10px] font-medium text-slate-400 mt-0.5 group-hover/name:text-slate-500 transition-colors cursor-pointer">{tx.candidate?.email}</p>
+                                            <p className="text-sm font-black text-slate-900 group-hover/name:text-primary transition-colors cursor-pointer">{tx.candidate?.firstName} {tx.candidate?.lastName}</p>
+                                            <p className="text-[10px] font-medium text-slate-400 mt-0.5 group-hover/name:text-primary/70 transition-colors cursor-pointer">{tx.candidate?.email}</p>
                                         </button>
                                     </td>
                                     <td className="px-8 py-6">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 shrink-0 overflow-hidden">
+                                            <div className="w-8 h-8 rounded-2xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10 shrink-0 overflow-hidden">
                                                 {tx.course?.thumbnail ? (
                                                     <img src={tx.course.thumbnail} alt="" className="w-full h-full object-cover" />
                                                 ) : <BookOpen size={14} />}
@@ -242,9 +242,9 @@ const AllInvoices = () => {
                                         </p>
                                     </td>
                                     <td className="px-8 py-6">
-                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest ${
-                                            tx.status === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
-                                            tx.status === 'pending' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-[9px] font-black uppercase tracking-widest ${
+                                            tx.status === 'success' ? 'bg-accent/5 text-accent border border-accent/10' :
+                                            tx.status === 'pending' ? 'bg-secondary/5 text-secondary border border-secondary/10' :
                                             'bg-rose-50 text-rose-600 border border-rose-100'
                                         }`}>
                                             <CheckCircle2 size={12} />
@@ -254,7 +254,7 @@ const AllInvoices = () => {
                                     <td className="px-8 py-6 text-right">
                                         <button 
                                             onClick={() => downloadInvoice(tx)}
-                                            className="p-2.5 bg-slate-50 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-100 rounded-xl transition-all group-hover:shadow-sm shadow-indigo-100 active:scale-95"
+                                            className="p-2.5 bg-slate-50 text-slate-400 hover:text-primary hover:bg-primary/5 border border-slate-100 rounded-2xl transition-all group-hover:shadow-sm shadow-primary/5 active:scale-95"
                                             title="Download PDF Invoice"
                                         >
                                             <Download size={18} />
@@ -315,7 +315,7 @@ const AllInvoices = () => {
                                     <div style={{ fontSize: '10px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Total Amount Paid</div>
                                     <div style={{ fontSize: '32px', fontWeight: '900' }}>₹{selectedTx.amount?.toLocaleString()}</div>
                                 </div>
-                                <div style={{ background: '#ecfdf5', color: '#059669', padding: '8px 20px', borderRadius: '100px', fontSize: '11px', fontWeight: '900', textTransform: 'uppercase' }}>✓ Paid In Full</div>
+                                <div style={{ background: '#f0f9ff', color: '#006CFA', padding: '8px 20px', borderRadius: '100px', fontSize: '11px', fontWeight: '900', textTransform: 'uppercase' }}>✓ Paid In Full</div>
                             </div>
                         </div>
                     )}

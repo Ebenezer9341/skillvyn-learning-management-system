@@ -190,6 +190,22 @@ const Profile = ({ userRole = "User" }) => {
     }
   };
 
+  const handlePasswordReset = async () => {
+    try {
+      const toastId = toast.loading("Sending reset link to your email...");
+      await api.post("/api/auth/forgot-password", { email: formData.email });
+      toast.update(toastId, { 
+        render: "Password reset link sent! Check your inbox.", 
+        type: "success", 
+        isLoading: false, 
+        autoClose: 5000 
+      });
+    } catch (err) {
+      toast.dismiss();
+      toast.error(err.response?.data?.message || "Failed to send reset link.");
+    }
+  };
+
   const allTabs = [
     { id: "personal", label: "Personal Info", icon: User, color: "blue" },
     {
@@ -215,25 +231,25 @@ const Profile = ({ userRole = "User" }) => {
 
   const tabColorMap = {
     blue: {
-      active: "bg-blue-600 text-white shadow-blue-200",
+      active: "bg-primary text-white shadow-primary/20",
       icon: "bg-white/20",
       inactive: "text-slate-400 hover:bg-slate-50 hover:text-slate-900",
       inactiveIcon: "bg-slate-50 group-hover:bg-white",
     },
     emerald: {
-      active: "bg-emerald-600 text-white shadow-emerald-200",
+      active: "bg-accent text-white shadow-accent/20",
       icon: "bg-white/20",
       inactive: "text-slate-400 hover:bg-slate-50 hover:text-slate-900",
       inactiveIcon: "bg-slate-50 group-hover:bg-white",
     },
     amber: {
-      active: "bg-amber-600 text-white shadow-amber-200",
+      active: "bg-accent/80 text-white shadow-accent/20",
       icon: "bg-white/20",
       inactive: "text-slate-400 hover:bg-slate-50 hover:text-slate-900",
       inactiveIcon: "bg-slate-50 group-hover:bg-white",
     },
     purple: {
-      active: "bg-purple-600 text-white shadow-purple-200",
+      active: "bg-secondary text-white shadow-secondary/20",
       icon: "bg-white/20",
       inactive: "text-slate-400 hover:bg-slate-50 hover:text-slate-900",
       inactiveIcon: "bg-slate-50 group-hover:bg-white",
@@ -252,10 +268,10 @@ const Profile = ({ userRole = "User" }) => {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <RefreshCw size={40} className="text-blue-600 animate-spin mb-4" />
-        <p className="text-slate-500 font-bold animate-pulse">
-          Synchronizing Profile...
-        </p>
+      <RefreshCw size={40} className="text-primary animate-spin mb-4" />
+      <p className="text-slate-500 font-bold animate-pulse">
+        Synchronizing Profile...
+      </p>
       </div>
     );
   }
@@ -269,7 +285,7 @@ const Profile = ({ userRole = "User" }) => {
     >
       {/* Header / Cover Section */}
       <div className="relative mb-[280px] sm:mb-[300px] md:mb-32 group/header">
-        <div className="h-48 md:h-64 rounded-[2.5rem] overflow-hidden relative shadow-2xl shadow-slate-200">
+        <div className="h-48 md:h-64 rounded-2xl overflow-hidden relative shadow-2xl shadow-slate-200">
           <img
             src={getImageUrl(
               formData.cover,
@@ -321,7 +337,7 @@ const Profile = ({ userRole = "User" }) => {
         {/* Profile Avatar Overlay */}
         <div className="absolute -bottom-18 left-8 md:left-14 flex flex-col md:flex-row md:items-end gap-8">
           <div className="relative group/avatar">
-            <div className="w-32 h-32 md:w-44 md:h-44 rounded-[2.5rem] border-[6px] border-white overflow-hidden shadow-2xl bg-white shadow-blue-500/10 transition-transform duration-500 group-hover/avatar:rotate-2">
+            <div className="w-32 h-32 md:w-44 md:h-44 rounded-2xl border-[6px] border-white overflow-hidden shadow-2xl bg-white shadow-primary/10 transition-transform duration-500 group-hover/avatar:rotate-2">
               <img
                 src={getImageUrl(
                   formData.avatar,
@@ -340,7 +356,7 @@ const Profile = ({ userRole = "User" }) => {
                   accept="image/*"
                   onChange={(e) => handleFileChange(e, "avatar")}
                 />
-                <div className="w-full h-full bg-slate-900/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-all duration-300 rounded-[1.5rem] text-white">
+                <div className="w-full h-full bg-secondary/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-all duration-300 rounded-2xl text-white">
                   <div className="flex gap-4">
                     <label
                       htmlFor="avatar-upload"
@@ -351,7 +367,7 @@ const Profile = ({ userRole = "User" }) => {
                     </label>
                     <button
                       onClick={() => setIsGeneratorOpen(true)}
-                      className="p-3 bg-blue-500/20 text-blue-300 hover:bg-blue-500/40 rounded-2xl cursor-pointer transition-all hover:scale-110 active:scale-95"
+                      className="p-3 bg-primary/20 text-primary-300 hover:bg-primary/40 rounded-2xl cursor-pointer transition-all hover:scale-110 active:scale-95"
                       title="Generate Avatar"
                     >
                       <Wand2 size={24} className="animate-pulse" />
@@ -365,7 +381,7 @@ const Profile = ({ userRole = "User" }) => {
           <div className="m-0">
             <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight flex items-center gap-3">
               {formData.firstName || formData.lastName ? `${formData.firstName} ${formData.lastName}` : 'Anonymous User'}
-              <CheckCircle2 size={24} className="text-blue-500" />
+              <CheckCircle2 size={24} className="text-primary" />
             </h1>
             {formData.email && (
               <p className="text-slate-500 font-bold mt-1 opacity-70">
@@ -387,7 +403,7 @@ const Profile = ({ userRole = "User" }) => {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 active:scale-95 disabled:opacity-50"
+                className="flex items-center gap-2 px-8 py-3 bg-primary text-white font-black rounded-2xl hover:bg-primary/90 transition-all shadow-xl shadow-primary/10 active:scale-95 disabled:opacity-50"
               >
                 {saving ? (
                   <RefreshCw size={20} className="animate-spin" />
@@ -400,7 +416,7 @@ const Profile = ({ userRole = "User" }) => {
           ) : (
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center gap-2 px-8 py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-black transition-all shadow-xl shadow-slate-200 active:scale-95 group/edit"
+              className="flex items-center gap-2 px-8 py-4 bg-secondary text-white font-black rounded-2xl hover:bg-secondary/90 transition-all shadow-xl shadow-secondary/10 active:scale-95 group/edit"
             >
               <Edit2
                 size={20}
@@ -417,7 +433,7 @@ const Profile = ({ userRole = "User" }) => {
         {userRole.toLowerCase() === "mentor" ? (
           <>
             <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 flex items-center gap-5 group hover:scale-[1.02] transition-all">
-              <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-all">
+              <div className="w-14 h-14 bg-primary/5 text-primary rounded-2xl flex items-center justify-center shadow-inner group-hover:bg-primary group-hover:text-white transition-all">
                 <BookOpen size={24} />
               </div>
               <div>
@@ -430,7 +446,7 @@ const Profile = ({ userRole = "User" }) => {
               </div>
             </div>
             <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 flex items-center gap-5 group hover:scale-[1.02] transition-all">
-              <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-inner group-hover:bg-emerald-600 group-hover:text-white transition-all">
+              <div className="w-14 h-14 bg-accent/5 text-accent rounded-2xl flex items-center justify-center shadow-inner group-hover:bg-accent group-hover:text-white transition-all">
                 <Users size={24} />
               </div>
               <div>
@@ -459,7 +475,7 @@ const Profile = ({ userRole = "User" }) => {
         ) : userRole.toLowerCase() === "candidate" ? (
           <>
             <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 flex items-center gap-5 group hover:scale-[1.02] transition-all">
-              <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-all">
+              <div className="w-14 h-14 bg-primary/5 text-primary rounded-2xl flex items-center justify-center shadow-inner group-hover:bg-primary group-hover:text-white transition-all">
                 <BookOpen size={24} />
               </div>
               <div>
@@ -472,7 +488,7 @@ const Profile = ({ userRole = "User" }) => {
               </div>
             </div>
             <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 flex items-center gap-5 group hover:scale-[1.02] transition-all">
-              <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-inner group-hover:bg-emerald-600 group-hover:text-white transition-all">
+              <div className="w-14 h-14 bg-accent/5 text-accent rounded-2xl flex items-center justify-center shadow-inner group-hover:bg-accent group-hover:text-white transition-all">
                 <CheckCircle2 size={24} />
               </div>
               <div>
@@ -485,7 +501,7 @@ const Profile = ({ userRole = "User" }) => {
               </div>
             </div>
             <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 flex items-center gap-5 group hover:scale-[1.02] transition-all">
-              <div className="w-14 h-14 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center shadow-inner group-hover:bg-purple-600 group-hover:text-white transition-all">
+              <div className="w-14 h-14 bg-secondary/5 text-secondary rounded-2xl flex items-center justify-center shadow-inner group-hover:bg-secondary group-hover:text-white transition-all">
                 <Award size={24} />
               </div>
               <div>
@@ -527,7 +543,7 @@ const Profile = ({ userRole = "User" }) => {
                     }`}
                   >
                     <div
-                      className={`p-2 rounded-xl transition-colors ${
+                      className={`p-2 rounded-2xl transition-colors ${
                         isActive ? colors.icon : colors.inactiveIcon
                       }`}
                     >
@@ -556,7 +572,7 @@ const Profile = ({ userRole = "User" }) => {
                       <div className="relative group/input">
                         <Icon
                           size={14}
-                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/input:text-blue-500 transition-colors"
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/input:text-primary transition-colors"
                         />
                         <input
                           type="text"
@@ -565,7 +581,7 @@ const Profile = ({ userRole = "User" }) => {
                           value={formData.socialLinks[platform]}
                           onChange={handleInputChange}
                           placeholder={`${platform.charAt(0).toUpperCase() + platform.slice(1)} URL`}
-                          className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold text-slate-600 focus:bg-white focus:ring-4 focus:ring-blue-500/5 transition-all outline-none"
+                          className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-bold text-slate-600 focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all outline-none"
                         />
                       </div>
                     </div>
@@ -589,7 +605,7 @@ const Profile = ({ userRole = "User" }) => {
               >
                 <div className="bg-white p-10 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50">
                   <div className="flex items-center gap-4 mb-10">
-                    <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 shadow-inner">
+                    <div className="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center text-primary shadow-inner">
                       <User size={24} />
                     </div>
                     <div>
@@ -613,7 +629,7 @@ const Profile = ({ userRole = "User" }) => {
                         disabled={!isEditing}
                         value={formData.firstName}
                         onChange={handleInputChange}
-                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-500/5 transition-all outline-none text-slate-900 font-black tracking-tight inner-shadow"
+                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all outline-none text-slate-900 font-black tracking-tight inner-shadow"
                       />
                     </div>
 
@@ -627,7 +643,7 @@ const Profile = ({ userRole = "User" }) => {
                         disabled={!isEditing}
                         value={formData.lastName}
                         onChange={handleInputChange}
-                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-500/5 transition-all outline-none text-slate-900 font-black tracking-tight inner-shadow"
+                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all outline-none text-slate-900 font-black tracking-tight inner-shadow"
                       />
                     </div>
 
@@ -656,7 +672,7 @@ const Profile = ({ userRole = "User" }) => {
                       <div className="relative group">
                         <Phone
                           size={18}
-                          className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors"
+                          className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors"
                         />
                         <input
                           type="text"
@@ -664,7 +680,7 @@ const Profile = ({ userRole = "User" }) => {
                           disabled={!isEditing}
                           value={formData.phone}
                           onChange={handleInputChange}
-                          className="w-full pl-14 pr-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-500/5 transition-all outline-none text-slate-900 font-black tracking-tight inner-shadow"
+                          className="w-full pl-14 pr-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all outline-none text-slate-900 font-black tracking-tight inner-shadow"
                         />
                       </div>
                     </div>
@@ -684,7 +700,7 @@ const Profile = ({ userRole = "User" }) => {
                           disabled={!isEditing}
                           value={formData.location}
                           onChange={handleInputChange}
-                          className="w-full pl-14 pr-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-500/5 transition-all outline-none text-slate-900 font-black tracking-tight inner-shadow"
+                          className="w-full pl-14 pr-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all outline-none text-slate-900 font-black tracking-tight inner-shadow"
                         />
                       </div>
                     </div>
@@ -701,23 +717,23 @@ const Profile = ({ userRole = "User" }) => {
                       value={formData.bio}
                       onChange={handleInputChange}
                       placeholder="Tell us about yourself..."
-                      className="w-full p-6 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-500/5 transition-all outline-none text-slate-700 font-bold leading-relaxed resize-none inner-shadow"
+                      className="w-full p-6 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all outline-none text-slate-700 font-bold leading-relaxed resize-none inner-shadow"
                     />
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-blue-600 via-indigo-700 to-slate-900 p-10 rounded-2xl text-white shadow-2xl shadow-blue-200 relative overflow-hidden group">
+                <div className="bg-gradient-to-br from-primary via-secondary to-secondary/80 p-10 rounded-2xl text-white shadow-2xl shadow-primary/10 relative overflow-hidden group">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-2xl -mr-32 -mt-32 blur-3xl transition-transform duration-1000 group-hover:scale-150"></div>
                   <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
                     <div className="flex items-center gap-6">
-                      <div className="w-20 h-20 bg-white/20 backdrop-blur-xl rounded-[1.5rem] flex items-center justify-center border border-white/30 shadow-2xl">
+                      <div className="w-20 h-20 bg-white/20 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-white/30 shadow-2xl">
                         <Calendar size={36} />
                       </div>
                       <div>
                         <h3 className="text-2xl font-black mb-1">
                           Active Journey
                         </h3>
-                        <p className="text-blue-100/70 font-bold text-sm">
+                        <p className="text-white/70 font-bold text-sm">
                           Member since{" "}
                           {authUser?.createdAt
                             ? new Date(authUser.createdAt).toLocaleDateString(
@@ -736,7 +752,7 @@ const Profile = ({ userRole = "User" }) => {
                       <button className="px-8 py-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl hover:bg-white/20 transition-all font-black text-sm active:scale-95">
                         Archive Data
                       </button>
-                      <button className="px-8 py-4 bg-white text-blue-900 rounded-2xl hover:bg-slate-50 transition-all font-black text-sm shadow-2xl shadow-black/20 active:scale-95">
+                      <button className="px-8 py-4 bg-white text-secondary rounded-2xl hover:bg-slate-50 transition-all font-black text-sm shadow-2xl shadow-black/20 active:scale-95">
                         Security Key
                       </button>
                     </div>
@@ -755,7 +771,7 @@ const Profile = ({ userRole = "User" }) => {
               >
                 <div className="bg-white p-10 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50">
                   <div className="flex items-center gap-4 mb-10">
-                    <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 shadow-inner">
+                    <div className="w-12 h-12 bg-accent/5 rounded-2xl flex items-center justify-center text-accent shadow-inner">
                       <Briefcase size={24} />
                     </div>
                     <div>
@@ -781,7 +797,7 @@ const Profile = ({ userRole = "User" }) => {
                           value={formData.specialty}
                           onChange={handleInputChange}
                           placeholder="e.g. Senior Backend Architect"
-                          className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-emerald-500/5 transition-all outline-none text-slate-900 font-black tracking-tight inner-shadow"
+                          className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-accent/5 transition-all outline-none text-slate-900 font-black tracking-tight inner-shadow"
                         />
                       </div>
                       <div className="space-y-2">
@@ -800,7 +816,7 @@ const Profile = ({ userRole = "User" }) => {
                             value={formData.socialLinks.portfolio}
                             onChange={handleInputChange}
                             placeholder="https://yourportfolio.com"
-                            className="w-full pl-14 pr-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-emerald-500/5 transition-all outline-none text-slate-900 font-black tracking-tight inner-shadow"
+                            className="w-full pl-14 pr-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-accent/5 transition-all outline-none text-slate-900 font-black tracking-tight inner-shadow"
                           />
                         </div>
                       </div>
@@ -809,7 +825,7 @@ const Profile = ({ userRole = "User" }) => {
                     <div className="p-10 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl border border-emerald-100/50 relative overflow-hidden group">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-2xl -mr-16 -mt-16 blur-2xl"></div>
                       <div className="flex items-start gap-6 relative z-10">
-                        <div className="w-16 h-16 px-4 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-xl shadow-emerald-200">
+                        <div className="w-16 h-16 px-4 bg-white rounded-2xl flex items-center justify-center text-accent shadow-xl shadow-accent/20">
                           <Shield size={32} />
                         </div>
                         <div>
@@ -822,7 +838,7 @@ const Profile = ({ userRole = "User" }) => {
                             publish courses and issue globally recognized
                             certificates.
                           </p>
-                          <button className="mt-5 flex items-center gap-2 text-emerald-600 font-black text-xs uppercase tracking-widest hover:gap-3 transition-all">
+                          <button className="mt-5 flex items-center gap-2 text-accent font-black text-xs uppercase tracking-widest hover:gap-3 transition-all">
                             View Certification Details{" "}
                             <ExternalLink size={14} />
                           </button>
@@ -872,8 +888,11 @@ const Profile = ({ userRole = "User" }) => {
                           </p>
                         </div>
                       </div>
-                      <button className="px-8 py-3 bg-white border border-slate-200 text-slate-900 font-black rounded-xl hover:bg-slate-50 transition-all shadow-sm">
-                        Reset
+                      <button 
+                        onClick={handlePasswordReset}
+                        className="px-8 py-3 bg-white border border-slate-200 text-slate-900 font-black rounded-2xl hover:bg-slate-50 transition-all shadow-sm active:scale-95"
+                      >
+                        Reset Password
                       </button>
                     </div>
                   </div>
@@ -933,10 +952,10 @@ const Profile = ({ userRole = "User" }) => {
                     ].map((setting) => (
                       <div
                         key={setting.id}
-                        className="p-8 bg-slate-50/50 rounded-2xl border border-slate-100 flex items-center justify-between group hover:bg-white hover:border-purple-200 transition-all inner-shadow"
+                        className="p-8 bg-slate-50/50 rounded-2xl border border-slate-100 flex items-center justify-between group hover:bg-white hover:border-secondary/20 transition-all inner-shadow"
                       >
                         <div className="flex items-center gap-6">
-                          <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-purple-600 shadow-sm border border-slate-100 transition-colors">
+                          <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-secondary shadow-sm border border-slate-100 transition-colors">
                             <setting.icon size={20} />
                           </div>
                           <div>
@@ -955,7 +974,7 @@ const Profile = ({ userRole = "User" }) => {
                           }
                           className={`w-14 h-8 rounded-full relative transition-all duration-500 ${
                             formData.notificationSettings?.[setting.id]
-                              ? "bg-purple-600 shadow-lg shadow-purple-200"
+                              ? "bg-secondary shadow-lg shadow-secondary/20"
                               : "bg-slate-200 shadow-inner"
                           } ${!isEditing ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                         >
